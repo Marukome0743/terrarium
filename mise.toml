@@ -86,14 +86,14 @@ description = "Assemble the GitHub Pages site into .site/ with the staged web/di
 run = "bash scripts/assemble-pages.sh .site"
 
 [tasks."ci:e2e"]
-description = "Test aube v2.6.1 and a staged pitchfork v2.29.0 build in all browsers"
+description = "Test aube v2.6.1 and the latest stable pitchfork build in all browsers"
 run = [
   'bun scripts/prepare-formicarium.mjs --from "$FORMICARIUM_INPUTS_DIR"',
   "cd packages/terrarium && bun install --frozen-lockfile",
   "bash scripts/fetch-builds.sh v2.6.1",
   "bash scripts/prepare-pitchfork-e2e.sh",
   "bash scripts/stage-web.sh",
-  "bash scripts/assemble-pages.sh .vendor/site-legacy legacy",
+  "TERRARIUM_PITCHFORK_REF=$(jq -r .ref .vendor/pitchfork-e2e.json) bash scripts/assemble-pages.sh .vendor/site-legacy legacy",
   "cd packages/terrarium && TERRARIUM_BUN=$(command -v bun) TERRARIUM_SITE_DIR=$(pwd)/../../.vendor/site-legacy bun run test:e2e",
   "bash scripts/assemble-pages.sh .vendor/site-formicarium",
   "cd packages/terrarium && TERRARIUM_BUN=$(command -v bun) TERRARIUM_SITE_DIR=$(pwd)/../../.vendor/site-formicarium bun x playwright test --config playwright.formicarium.config.ts --workers=1 --retries=0",

@@ -140,3 +140,9 @@ archive は descriptor に記載した16 regular filesをその相対pathで含�
 legacy Wasmとformicarium guestは別のcatalog/siteで検証します。`scripts/assemble-pages.sh OUTPUT legacy` はstaged `web/dist`を維持し、default/formicarium modeは固定guestを配置します。browser configは `TERRARIUM_BUN` と絶対 `TERRARIUM_SITE_DIR` を必須とし、legacy terminal/pitchfork と専用45 casesを分けます。`site:build`の既定出力は従来の`.site`です。既存候補を保存する検証では別出力を使い、必要なら `TERRARIUM_PROTECTED_SITE` に保存対象の絶対pathを指定します。
 
 `pages.yml`と`publish-terrarium.yml`もinstall前に同じ固定入力を準備します。lint workflowsは依存installを行いません。各実行環境では固定archiveの配備と`FORMICARIUM_INPUTS_URL`設定が必要です。公開RC/実Pages/実Safari受入れはローカル検証の対象外です。
+
+### 最新pitchforkのCI対象
+
+E2E CIはGitHubの最新安定リリースを実行ごとに一度解決し、そのtagとfull commit SHAをbuild/cache/staging/ブラウザ検証へ渡します。API取得や最新ソースのbuildに失敗した場合は旧版へfallbackしません。解決した版の専用patchがあればそれを使い、なければ最新patchの適用を試みて不一致を失敗として報告します。
+
+ローカルの`ci:e2e`も最新安定版を要求します。事前にそのcommitを`build-pitchfork.sh`でbuildし、`TERRARIUM_PITCHFORK_BUILD`で出力を渡してください。CI用legacy候補のdefaultとversion期待値は解決した版を使います。公開サイトのdefault設定と、digest固定のformicarium検証入力は別に保持します。

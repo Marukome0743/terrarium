@@ -10,7 +10,12 @@ site=${1:?usage: assemble-pages.sh <site dir> [formicarium|legacy]}
 mode=${2:-formicarium}
 case "$mode" in
   formicarium) node "$root/scripts/stage-formicarium.mjs" --check ;;
-  legacy) test -s "$root/web/dist/builds.json" ;;
+  legacy)
+    test -s "$root/web/dist/builds.json"
+    if [[ -n ${TERRARIUM_PITCHFORK_REF:-} ]]; then
+      jq -e --arg ref "$TERRARIUM_PITCHFORK_REF" '.builds.pitchfork[$ref] != null' "$root/web/dist/builds.json" >/dev/null
+    fi
+    ;;
   *) echo "unknown assembly mode: $mode" >&2; exit 1 ;;
 esac
 # The caller may protect a preserved candidate; always refuse the source root.
@@ -21,6 +26,10 @@ package=$root/packages/terrarium
 rm -rf "$site"
 mkdir -p "$site"
 cp -r "$root/web" "$site/web"
+if [[ $mode == legacy && -n ${TERRARIUM_PITCHFORK_REF:-} ]]; then
+  jq --arg ref "$TERRARIUM_PITCHFORK_REF" '.pitchfork.default = $ref' "$site/web/tools.json" > "$site/web/tools.json.tmp"
+  mv "$site/web/tools.json.tmp" "$site/web/tools.json"
+fi
 cp "$root/LICENSE" "$site/"
 touch "$site/.nojekyll"
 

@@ -16,7 +16,12 @@ toolchain=$(basename "$root"/patches/toolchain/rust-std-*.patch .patch)
 toolchain=${toolchain#rust-std-}
 target=${CARGO_TARGET_DIR:-$HOME/.tem-pf}
 cargo=${CARGO:-cargo}
+version=$(awk '/^version = / { gsub(/"/, "", $3); print $3; exit }' "$src/Cargo.toml")
 tool_patch=$(printf '%s\n' "$root"/patches/tools/pitchfork-*.patch | sort -V | tail -1)
+
+if [[ -f "$root/patches/tools/pitchfork-$version.patch" ]]; then
+  tool_patch="$root/patches/tools/pitchfork-$version.patch"
+fi
 
 TERRARIUM_THREADS=1 . "$root/scripts/emscripten-env.sh"
 "$root/scripts/patch-rust-src.sh"
