@@ -24,8 +24,9 @@ TERRARIUM_THREADS=1 . "$root/scripts/emscripten-env.sh"
 if ! grep -q '^# terrarium-patches$' "$src/Cargo.toml"; then
   echo "applying $(basename "$tool_patch")"
   # A failed vendor step can leave the tool patch applied on a retry.
-  if ! (cd "$src" && patch -p1 --binary --reverse --dry-run --quiet) <"$tool_patch"; then
-    (cd "$src" && patch -p1 --binary --forward) <"$tool_patch"
+  # Force the requested direction: batch mode can silently reverse a dry run.
+  if ! (cd "$src" && patch -p1 --binary --force --reverse --dry-run --quiet) <"$tool_patch"; then
+    (cd "$src" && patch -p1 --binary --force --forward) <"$tool_patch"
   fi
   (cd "$src" && "$cargo" "+$toolchain" fetch)
   vendor_block=$("$root/scripts/vendor-patched.sh" "$src")

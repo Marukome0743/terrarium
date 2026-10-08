@@ -173,18 +173,24 @@ describe('pitchfork ref resolution', () => {
     });
   });
 
-  test('resolves a pull request through its head endpoint', () => {
-    const result = run('resolve-ref.sh', ['pitchfork', 'pr-42']);
-    expect(result.code).toBe(0);
-    expect(metadata(result.stdout)).toMatchObject({
-      name: 'pr-42',
-      ref: 'refs/pull/42/head',
-      pr: 'https://github.com/jdx/pitchfork/pull/42',
+  for (const ref of [
+    'pr-42',
+    '#42',
+    'https://github.com/jdx/pitchfork/pull/42',
+  ]) {
+    test(`resolves ${ref} through its head endpoint`, () => {
+      const result = run('resolve-ref.sh', ['pitchfork', ref]);
+      expect(result.code).toBe(0);
+      expect(metadata(result.stdout)).toMatchObject({
+        name: 'pr-42',
+        ref: 'refs/pull/42/head',
+        pr: 'https://github.com/jdx/pitchfork/pull/42',
+      });
+      expect(readFileSync(join(root, 'gh-calls'), 'utf8')).toContain(
+        'repos/jdx/pitchfork/pulls/42',
+      );
     });
-    expect(readFileSync(join(root, 'gh-calls'), 'utf8')).toContain(
-      'repos/jdx/pitchfork/pulls/42',
-    );
-  });
+  }
 
   test('rejects unknown tools without invoking the API', () => {
     const result = run('resolve-ref.sh', ['unknown']);

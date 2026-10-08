@@ -23,7 +23,8 @@ ref=${2:-$(jq -r .default <<<"$entry")}
 echo "tool=$tool"
 echo "repo=$repo"
 if [[ $ref =~ ^(pr-|#)([0-9]+)$ || $ref =~ /pull/([0-9]+)/?$ ]]; then
-  n=${BASH_REMATCH[-1]}
+  match_index=$((${#BASH_REMATCH[@]} - 1))
+  n=${BASH_REMATCH[match_index]}
   commit=$(gh api "repos/$repo/pulls/$n" --jq .head.sha)
   echo "name=pr-$n"
   echo "ref=refs/pull/$n/head"

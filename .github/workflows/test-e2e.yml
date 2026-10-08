@@ -19,6 +19,10 @@ jobs:
     env:
       EMSDK_VERSION: "6.0.10"
     steps:
+      - name: Require fixed formicarium input URL
+        env:
+          FORMICARIUM_INPUTS_URL: ${{ vars.FORMICARIUM_INPUTS_URL }}
+        run: ': "${FORMICARIUM_INPUTS_URL:?Configure the fixed formicarium input archive URL}"'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -107,7 +111,15 @@ jobs:
           install: true
           cache: true
           experimental: true
-          install_args: bun jq
+          install_args: bun node jq
+
+      - name: Prepare fixed formicarium inputs
+        working-directory: .
+        env:
+          FORMICARIUM_INPUTS_URL: ${{ vars.FORMICARIUM_INPUTS_URL }}
+        run: |
+          : "${FORMICARIUM_INPUTS_URL:?Configure the fixed formicarium input archive URL}"
+          bun scripts/prepare-formicarium.mjs --url "$FORMICARIUM_INPUTS_URL"
 
       - name: Install dependencies
         working-directory: packages/terrarium
@@ -127,7 +139,10 @@ jobs:
           TERRARIUM_COMMIT=cfdea79f1d52b8449c0b99b29a03d9e771cd8ec3 \
             bash scripts/stage-web.sh pitchfork v2.29.0 "$RUNNER_TEMP/pitchfork"
           bash scripts/stage-web.sh
-          mise run site:build
+          bash scripts/assemble-pages.sh .vendor/site-legacy legacy
+          bash scripts/assemble-pages.sh .vendor/site-formicarium formicarium
+          sha256sum .vendor/site-legacy/web/terrarium.mjs .vendor/site-formicarium/web/terrarium.mjs
+          sha256sum packages/terrarium/src/{terminal,formicarium-session,catalog}.ts
 
       - name: Cache Playwright system packages (${{ matrix.browser }})
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -153,7 +168,13 @@ jobs:
 
       - name: Run Playwright suite (${{ matrix.browser }})
         working-directory: packages/terrarium
-        run: bun run test:e2e -- --project=${{ matrix.browser }}
+        run: |
+          TERRARIUM_BUN=$(command -v bun)
+          export TERRARIUM_BUN
+          export TERRARIUM_SITE_DIR="$GITHUB_WORKSPACE/.vendor/site-legacy"
+          bun run test:e2e -- --project=${{ matrix.browser }}
+          export TERRARIUM_SITE_DIR="$GITHUB_WORKSPACE/.vendor/site-formicarium"
+          bunx playwright test --config playwright.formicarium.config.ts --project=${{ matrix.browser }} --workers=1 --retries=0
 
       - name: Upload Playwright report on failure
         if: failure()
