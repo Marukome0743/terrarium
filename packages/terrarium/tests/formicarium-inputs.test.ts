@@ -148,8 +148,59 @@ test('assembly preflight preserves an existing output when fixed inputs are miss
     'preserved',
   );
 });
+test('a supplied archive with a different compressed digest is refused before placement', async () => {
+  const f = await fixture();
+  const archive = path.join(f.root, 'inputs.tar.gz');
+  await writeFile(archive, tar('pack.tgz'));
+  await expect(
+    prepareInputs({
+      archive,
+      output: f.output,
+      descriptor: {
+        ...f.descriptor,
+        distribution: { archiveSha256: '0'.repeat(64) },
+      },
+    }),
+  ).rejects.toThrow('archive digest mismatch');
+  await expect(readFile(path.join(f.output, 'pack.tgz'))).rejects.toMatchObject(
+    { code: 'ENOENT' },
+  );
+});
+
+test('the CI archive is pinned to an immutable commit and matches the verified fixed inputs', async () => {
+  const descriptor = JSON.parse(
+    await readFile(
+      new URL('../../../integration/formicarium-inputs.json', import.meta.url),
+      'utf8',
+    ),
+  );
+  expect(descriptor.distribution.commit).toMatch(/^[a-f0-9]{40}$/);
+  expect(descriptor.distribution.url).toBe(
+    `https://raw.githubusercontent.com/Marukome0743/terrarium/${descriptor.distribution.commit}/inputs.tar.gz`,
+  );
+  expect(descriptor.distribution.archiveSha256).toMatch(/^[a-f0-9]{64}$/);
+  for (const name of [
+    'test-terrarium.yml',
+    'test-e2e.yml',
+    'pages.yml',
+    'publish-terrarium.yml',
+  ]) {
+    const source = await readFile(
+      new URL(`../../../.github/workflows/${name}`, import.meta.url),
+      'utf8',
+    );
+    expect(source).toContain(
+      `vars.FORMICARIUM_INPUTS_URL || '${descriptor.distribution.url}'`,
+    );
+  }
+});
 test('CI verifies fixed inputs before install and retains separate three-browser suites', async () => {
-  for (const name of ['test-terrarium.yml', 'test-e2e.yml']) {
+  for (const name of [
+    'test-terrarium.yml',
+    'test-e2e.yml',
+    'pages.yml',
+    'publish-terrarium.yml',
+  ]) {
     const source = await readFile(
       new URL(`../../../.github/workflows/${name}`, import.meta.url),
       'utf8',

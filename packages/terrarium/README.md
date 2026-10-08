@@ -135,11 +135,11 @@ mise exec -- bun install --frozen-lockfile
 
 archive は descriptor に記載した16 regular filesをその相対pathで含むgzip ustarです。リンク、余分/不足ファイル、digest違いは配置前に拒否します。入力はignored `.vendor/formicarium-inputs` に配置します。prepare receiptの `normalizedDescriptorSha256` はJSONを正規化したdigestで、descriptor raw bytesのdigestとは区別します。既存入力は同じ16 bytes集合のときのみ再利用します。
 
-`mise run ci:terrarium` と `mise run ci:e2e` は `FORMICARIUM_INPUTS_DIR` を明示し、prepareをinstallより先に実行します。miseのenter hookによる自動installは無効です。単独のbuild/test tasksも先に上記prepare/installが必要です。CIの2 test workflowsは repository variable `FORMICARIUM_INPUTS_URL` のclean HTTPS archiveを固定digestで検証します。URL未設定はfail-fastです。今回archiveの外部upload、変数設定、remote CIは実施していません。
+`mise run ci:terrarium` と `mise run ci:e2e` は `FORMICARIUM_INPUTS_DIR` を明示し、prepareをinstallより先に実行します。miseのenter hookによる自動installは無効です。単独のbuild/test tasksも先に上記prepare/installが必要です。CIは`integration/formicarium-inputs.json`に記録したコミットSHA固定の公開archiveを既定値として取得し、16ファイルのdigestを検証します。repository variable `FORMICARIUM_INPUTS_URL`で同じ固定入力の別配布先を指定できます。未設定でも既定archiveを使うため、clone/forkごとの変数設定は不要です。入力は公開forkの専用ブランチに保存し、mainへビルド成果物を追加しません。formicariumのリポジトリは公開済みですが、npm/JSR packageをリリースしたものではありません。
 
 legacy Wasmとformicarium guestは別のcatalog/siteで検証します。`scripts/assemble-pages.sh OUTPUT legacy` はstaged `web/dist`を維持し、default/formicarium modeは固定guestを配置します。browser configは `TERRARIUM_BUN` と絶対 `TERRARIUM_SITE_DIR` を必須とし、legacy terminal/pitchfork と専用45 casesを分けます。`site:build`の既定出力は従来の`.site`です。既存候補を保存する検証では別出力を使い、必要なら `TERRARIUM_PROTECTED_SITE` に保存対象の絶対pathを指定します。
 
-`pages.yml`と`publish-terrarium.yml`もinstall前に同じ固定入力を準備します。lint workflowsは依存installを行いません。各実行環境では固定archiveの配備と`FORMICARIUM_INPUTS_URL`設定が必要です。公開RC/実Pages/実Safari受入れはローカル検証の対象外です。
+`pages.yml`と`publish-terrarium.yml`もinstall前に同じ固定入力を準備します。lint workflowsは依存installを行いません。同じコミットSHA固定のarchiveを既定値として使います。公開RC/実Pages/実Safari受入れはローカル検証の対象外です。
 
 ### 最新pitchforkのCI対象
 

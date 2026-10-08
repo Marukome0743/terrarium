@@ -85,5 +85,10 @@
       "size": 5323,
       "sha256": "aab15f45b4e355d453c39532393728221299d656b8dfd47826380dc6a070feec"
     }
-  ]
+  ],
+  "distribution": {
+    "url": "https://raw.githubusercontent.com/Marukome0743/terrarium/c670296b2ebed05f2e8156a74fede29604ec8c95/inputs.tar.gz",
+    "archiveSha256": "00abfc608106c8b4a17bd973b4a948b0aa1fa23c713ac22ad62e5a4571c75d01",
+    "commit": "c670296b2ebed05f2e8156a74fede29604ec8c95"
+  }
 }

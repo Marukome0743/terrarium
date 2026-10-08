@@ -62,6 +62,11 @@ function validateDescriptor(descriptor) {
   }
   for (const name of [descriptor.resolver, descriptor.guestSite])
     if (!safePath(name)) fail('invalid input directory');
+  if (
+    descriptor.distribution &&
+    !/^[a-f0-9]{64}$/.test(descriptor.distribution.archiveSha256)
+  )
+    fail('invalid archive digest');
   return descriptor;
 }
 
@@ -187,6 +192,11 @@ export async function prepareInputs({
       bytes = Buffer.from(await response.arrayBuffer());
     } else bytes = await readFile(archive);
     if (bytes.length > 256 * 1024 * 1024) fail('archive too large');
+    if (
+      descriptor.distribution &&
+      sha(bytes) !== descriptor.distribution.archiveSha256
+    )
+      fail('archive digest mismatch');
     files = archiveFiles(bytes);
   }
   validateFiles(files, descriptor);
