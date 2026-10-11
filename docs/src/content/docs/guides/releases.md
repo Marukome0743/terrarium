@@ -3,15 +3,15 @@ title: Release automation
 description: Review a shared release version and publish the terminal package.
 ---
 
-Terrarium uses one release version for the repository, npm and JSR. The root
-`version.txt` is the repository version; `packages/terrarium/package.json` and
-`packages/terrarium/jsr.json` carry the same version. The initial baseline is
+Terrarium uses one release version for the repository, npm and JSR. `packages/terrarium/package.json` and
+`packages/terrarium/jsr.json` carry the same version. No separate repository
+version file is needed. The initial baseline is
 `0.1.0`. Private documentation tooling has no public release version.
 
 ## Release flow
 
 Release Please reads Conventional Commits across the repository and prepares a
-release PR that updates `CHANGELOG.md`, `version.txt` and both package manifests.
+release PR that updates `CHANGELOG.md` and both package manifests.
 Review its changelog and wait for the required checks, then merge the PR. This
 creates a `v<version>` tag and GitHub Release. The tag triggers
 `publish-terrarium.yml` to publish the terminal package to npm and JSR through
@@ -19,6 +19,12 @@ OIDC. The workflow filename stays unchanged for npm trusted publishing.
 
 `fix` produces a patch and `feat` produces a minor. Before 1.0, breaking changes
 produce a minor too. `docs`, `chore` and `ci` alone do not trigger releases.
+The existing `simple` strategy keeps repository-wide commit collection. Its
+optional `version.txt` update is skipped when the file is absent; it is not
+recreated. Release Please tracks the last released version in its existing
+manifest and GitHub tags, and updates the two public JSON manifests together.
+Publishing checks their versions and the `v<version>` tag agree.
+
 Historical `terrarium-v*` tags retain their contents; new releases use `v*`.
 The bootstrap SHA is the main commit before this migration. The first changelog
 starts with subsequent commits, rather than replaying the repository's history.

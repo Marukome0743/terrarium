@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { isPublished, validateVersion } from '../scripts/release.js';
 
 const metadata = { name: '@aletheia-works/terrarium', version: '0.1.0' };
@@ -70,6 +71,27 @@ describe('release validation', () => {
     ]);
     const npm = JSON.parse(read('packages/terrarium/package.json'));
     const jsr = JSON.parse(read('packages/terrarium/jsr.json'));
-    expect(read('version.txt').trim()).toBe(validateVersion(npm, jsr));
+    expect(validateVersion(npm, jsr)).toBe(
+      JSON.parse(read('.github/release-please-manifest.json'))['.'],
+    );
   });
+});
+
+test('publication validation uses public manifests without a repository version file', () => {
+  const root = new URL('../../../', import.meta.url);
+  expect(existsSync(new URL('version.txt', root))).toBe(false);
+  expect(existsSync(new URL('package.json', root))).toBe(false);
+  const npm = JSON.parse(
+    readFileSync(new URL('packages/terrarium/package.json', root), 'utf8'),
+  );
+  const run = (tag: string) =>
+    spawnSync(process.execPath, ['scripts/release.ts'], {
+      cwd: new URL('packages/terrarium/', root),
+      env: { ...process.env, RELEASE_TAG: tag },
+      encoding: 'utf8',
+    });
+  expect(run(`v${npm.version}`).status).toBe(0);
+  const mismatch = run('v999.0.0');
+  expect(mismatch.status).not.toBe(0);
+  expect(mismatch.stderr).toContain(`Expected tag v${npm.version}`);
 });

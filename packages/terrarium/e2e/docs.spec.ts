@@ -55,6 +55,10 @@ test('aube dedicated demo runs the accepted guest on Pages without server isolat
     async () => (await navigator.serviceWorker.ready).scope,
   );
   expect(scope).toBe(`${PAGES}/terrarium/`);
+  // The controller must keep a Safari-compatible policy on later navigations.
+  await page.reload();
+  await expect(page.locator('#demo-status')).toContainText('Ready: aube');
+  expect(await page.evaluate(() => crossOriginIsolated)).toBe(true);
   const result = await page.evaluate(async () => {
     const terminal = document.querySelector(
       'terrarium-terminal',

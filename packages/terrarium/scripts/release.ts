@@ -1,4 +1,4 @@
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync } from 'node:fs';
 import jsr from '../jsr.json' with { type: 'json' };
 import npm from '../package.json' with { type: 'json' };
 
@@ -69,13 +69,6 @@ export async function isPublished(
 
 if (import.meta.main) {
   const version = validateVersion(npm, jsr, process.env.RELEASE_TAG);
-  const repositoryVersion = readFileSync(
-    new URL('../../../version.txt', import.meta.url),
-    'utf8',
-  ).trim();
-  if (repositoryVersion !== version) {
-    throw new Error('version.txt and package versions must agree');
-  }
   if (process.argv.includes('--registries')) {
     if (!process.env.GITHUB_OUTPUT || !process.env.RELEASE_TAG) {
       throw new Error('Registry checks require RELEASE_TAG and GITHUB_OUTPUT');
