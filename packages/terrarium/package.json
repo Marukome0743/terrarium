@@ -42,7 +42,7 @@
     "test:prepare": "node ../../scripts/fetch-formicarium-rc.mjs",
     "test": "bun run test:prepare && bun run gen && bun test tests",
     "prepublishOnly": "bun run build",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test --config playwright.latest.config.ts"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.11.0",

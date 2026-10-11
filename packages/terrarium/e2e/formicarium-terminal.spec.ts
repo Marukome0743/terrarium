@@ -1,6 +1,20 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { expect, type Page, test } from '@playwright/test';
+import { releaseVersion } from '../../../scripts/latest-guests.mjs';
 import { SITE } from '../playwright.formicarium.config.ts';
 import type { TerrariumTerminal } from '../src/terminal.ts';
+
+const site = process.env.TERRARIUM_SITE_DIR;
+if (!site) throw new Error('TERRARIUM_SITE_DIR required');
+const tools = JSON.parse(
+  readFileSync(path.join(site, 'web/tools.json'), 'utf8'),
+);
+const { builds } = JSON.parse(
+  readFileSync(path.join(site, 'web/dist/builds.json'), 'utf8'),
+);
+const aube = builds.aube[tools.aube.default];
+const pitchfork = builds.pitchfork[tools.pitchfork.default];
 
 declare global {
   var u3Events: {
@@ -40,16 +54,18 @@ test('latest aube ready fields, events and actual Worker version', async ({
   const ready = await open(page);
   expect(ready).toMatchObject({
     tool: 'aube',
-    ref: 'v2.7.0',
-    commit: 'd36fec01764689ef6d99a5e43de98925b571d67f',
+    ref: aube.ref,
+    commit: aube.source.commit,
   });
   expect(ready.seconds).toBeGreaterThanOrEqual(0);
   const result = await run(page, 'aube --version');
   expect(result).toMatchObject({
     command: 'aube --version',
     code: 0,
-    output: '2.7.0 linux-x64 (2026-10-07)\n',
   });
+  expect(result.output.match(/\b\d+\.\d+\.\d+\b/)?.[0]).toBe(
+    releaseVersion(aube.ref),
+  );
   expect(await transcript(page)).toBe(result.output);
   const events = await page.evaluate(() => u3Events);
   expect(events.map((event) => event.type)).toEqual([
@@ -65,11 +81,11 @@ test('latest pitchfork uses common runtime actual Worker version', async ({
   test.setTimeout(600_000);
   expect(await open(page, '?tool=pitchfork')).toMatchObject({
     tool: 'pitchfork',
-    ref: 'v2.30.0',
+    ref: pitchfork.ref,
   });
   expect(await run(page, 'pitchfork --version')).toMatchObject({
     code: 0,
-    output: 'pitchfork 2.30.0\n',
+    output: `pitchfork ${releaseVersion(pitchfork.ref)}\n`,
   });
 });
 test('nested cwd keeps /work sibling before and after actual guest', async ({
@@ -203,7 +219,7 @@ test('tool switch resets attributes and suppresses prior queued run notification
     () =>
       (document.querySelector('terrarium-terminal') as TerrariumTerminal).ready,
   );
-  expect(ready).toMatchObject({ tool: 'pitchfork', ref: 'v2.30.0' });
+  expect(ready).toMatchObject({ tool: 'pitchfork', ref: pitchfork.ref });
   expect(
     await page.evaluate(() =>
       ['ref', 'fixture', 'cwd', 'run'].map((name) =>

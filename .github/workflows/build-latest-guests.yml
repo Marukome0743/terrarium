@@ -190,7 +190,7 @@ jobs:
             .vendor/native/*.json
             .vendor/biome-refs/*/biome.json
           retention-days: 7
-  browsers:
+  E2E:
     needs: candidate
     strategy:
       fail-fast: false
@@ -240,7 +240,7 @@ jobs:
   guests:
     # Preserve the required check and make skipped/failed dependencies fail closed.
     if: always()
-    needs: [resolve, latest, biome, candidate, browsers]
+    needs: [resolve, latest, biome, candidate, E2E]
     runs-on: ubuntu-latest
     steps:
       - name: Require all build and acceptance jobs

@@ -167,10 +167,9 @@ test('a supplied archive with a different compressed digest is refused before pl
   );
 });
 
-test('four workflows pin the verified input URL and guard supply before installation', async () => {
+test('workflows pin the verified input URL and guard supply before installation', async () => {
   for (const name of [
     'test-terrarium.yml',
-    'test-e2e.yml',
     'pages.yml',
     'publish-terrarium.yml',
   ]) {
@@ -268,10 +267,9 @@ test('old resolver-extension archive is rejected by the current exact sixteen-fi
   ).rejects.toMatchObject({ code: 'ENOENT' });
 });
 
-test('CI verifies fixed inputs before install and retains separate three-browser suites', async () => {
+test('CI verifies fixed inputs before install', async () => {
   for (const name of [
     'test-terrarium.yml',
-    'test-e2e.yml',
     'pages.yml',
     'publish-terrarium.yml',
   ]) {
@@ -285,10 +283,5 @@ test('CI verifies fixed inputs before install and retains separate three-browser
     expect(source.indexOf(prepare)).toBeLessThan(
       source.indexOf('bun install --frozen-lockfile'),
     );
-    if (name === 'test-e2e.yml') {
-      expect(source).toContain('browser: [chromium, firefox, webkit]');
-      expect(source).toContain('site-legacy legacy');
-      expect(source).toContain('playwright.formicarium.config.ts');
-    }
   }
 });

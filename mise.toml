@@ -78,9 +78,9 @@ dir = "packages/terrarium"
 run = "bun run typecheck"
 
 [tasks."terrarium:e2e"]
-description = "Browser tests against .site (run site:build first, with a build in web/dist)"
+description = "Browser tests against the latest guest candidate prepared by ci:e2e"
 dir = "packages/terrarium"
-run = "TERRARIUM_BUN=$(command -v bun) TERRARIUM_SITE_DIR=$(pwd)/../../.vendor/site-legacy bun run test:e2e"
+run = "TERRARIUM_BUN=$(command -v bun) TERRARIUM_SITE_DIR=$(pwd)/../../.vendor/site-latest bun run test:e2e"
 
 # ── Infra ─────────────────────────────────────────────────────────────
 

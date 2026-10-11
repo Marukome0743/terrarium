@@ -331,6 +331,13 @@ if (
         resolverRoot ?? path.join(root, '.vendor/formicarium-inputs/resolver'),
       ),
     );
+  else if (verb === 'verify' && filename && destination)
+    validateLatest(
+      await load(path.join(destination, 'tools.json')),
+      await load(path.join(destination, 'dist/builds.json')),
+      await load(filename),
+      await load(path.join(root, 'web/tools.json')),
+    );
   else if (verb === 'stage' && filename && destination && resolverRoot)
     await stageLatest({
       resolutions: await load(filename),
@@ -340,6 +347,6 @@ if (
     });
   else
     throw new Error(
-      'usage: latest-guests.mjs resolve <resolutions.json> | build <resolutions.json> <binaries> [resolver] | stage <binaries/resolutions.json> <site> <resolver>',
+      'usage: latest-guests.mjs resolve <resolutions.json> | build <resolutions.json> <binaries> [resolver] | verify <resolutions.json> <site> | stage <binaries/resolutions.json> <site> <resolver>',
     );
 }

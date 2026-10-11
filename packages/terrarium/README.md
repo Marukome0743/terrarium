@@ -135,7 +135,7 @@ mise exec -- bun install --frozen-lockfile
 
 archive は descriptor に記載した16 regular filesをその相対pathで含むgzip ustarです。リンク、余分/不足ファイル、digest違いは配置前に拒否します。入力はignored `.vendor/formicarium-inputs` に配置します。prepare receiptの `normalizedDescriptorSha256` はJSONを正規化したdigestで、descriptor raw bytesのdigestとは区別します。既存入力は同じ16 bytes集合のときのみ再利用します。
 
-`mise run ci:terrarium` と `mise run ci:e2e` は `FORMICARIUM_INPUTS_DIR` を明示し、prepareをinstallより先に実行します。miseのenter hookによる自動installは無効です。単独のbuild/test tasksも先に上記prepare/installが必要です。CIの4workflow（`test-terrarium.yml`、`test-e2e.yml`、`pages.yml`、`publish-terrarium.yml`）は repository variable `FORMICARIUM_INPUTS_URL` に現在の固定16ファイルを含むHTTPS archiveのURLを明示する必要があります。未設定・空値はprepareおよびinstallの前に拒否し、旧archiveへのfallbackはありません。取得後に `integration/formicarium-inputs.json` の全16ファイルのpath・size・SHA-256を検証します。ローカルの正しい入力は検証済みですが、この現在入力の遠隔配布先・供給・到達性と遠隔CIの受入れは未検証です。配布URLや公開済みpackageをこの文書で仮定しません。
+`mise run ci:terrarium` と `mise run ci:e2e` は `FORMICARIUM_INPUTS_DIR` を明示し、prepareをinstallより先に実行します。miseのenter hookによる自動installは無効です。単独のbuild/test tasksも先に上記prepare/installが必要です。CI workflow（`test-terrarium.yml`、`build-latest-guests.yml`、`pages.yml`、`publish-terrarium.yml`）は repository variable `FORMICARIUM_INPUTS_URL` に現在の固定16ファイルを含むHTTPS archiveのURLを明示する必要があります。未設定・空値はprepareおよびinstallの前に拒否し、旧archiveへのfallbackはありません。取得後に `integration/formicarium-inputs.json` の全16ファイルのpath・size・SHA-256を検証します。ローカルの正しい入力は検証済みですが、この現在入力の遠隔配布先・供給・到達性と遠隔CIの受入れは未検証です。配布URLや公開済みpackageをこの文書で仮定しません。
 
 legacy Wasmとformicarium guestは別のcatalog/siteで検証します。`mise-tasks/site/build.sh OUTPUT legacy` はstaged `web/dist`を維持し、default/formicarium modeは固定guestを配置します。browser configは `TERRARIUM_BUN` と絶対 `TERRARIUM_SITE_DIR` を必須とし、legacy terminal/pitchfork と専用45 casesを分けます。`site:build`の既定出力は従来の`.site`です。既存候補を保存する検証では別出力を使い、必要なら `TERRARIUM_PROTECTED_SITE` に保存対象の絶対pathを指定します。
 
@@ -161,11 +161,11 @@ mise exec -- node scripts/accept-formicarium-node.mjs --inputs <new-inputs> --ou
 
 2026-10-10の受入れ結果はNode 6/6、Chromium／Firefox／WebKit各15/15、skip 0です。実guestはaube v2.7.0とpitchfork v2.30.0で、version、seed/nested cwd、設定ファイル永続化、非zero exit後の回復、disposeを確認しました。browserのDOM/event/iframe/origin契約は既存45ケースで確認しました。コマンド・環境version・出力・差分は`aidlc/spaces/default/intents/261010-formicarium-rc-acceptanc/construction/code-generation/evidence/`に記録しています。これはローカル受入れで、遠隔CI・Pages・実Safariの結果は未検証です。
 
-### 最新pitchforkのCI対象
+### 最新guestのCI対象
 
-E2E CIはGitHubの最新安定リリースを実行ごとに一度解決し、そのtagとfull commit SHAをbuild/cache/staging/ブラウザ検証へ渡します。API取得や最新ソースのbuildに失敗した場合は旧版へfallbackしません。解決した版の専用patchがあればそれを使い、なければ最新patchの適用を試みて不一致を失敗として報告します。
+ローカルの`ci:e2e`とPR CIは、aube・pitchfork・Biomeの最新安定リリースを実行ごとに一度解決し、そのtagとfull commit SHAを取得・staging・Node・3ブラウザ検証へ渡します。公式static muslバイナリを優先し、必要な場合は未変更のupstreamソースをビルドします。旧aubeの固定版取得と旧Emscripten E2Eは通常の検証から外しました。
 
-ローカルの`ci:e2e`も最新安定版を要求します。事前にそのcommitを`build-pitchfork.sh`でbuildし、`TERRARIUM_PITCHFORK_BUILD`で出力を渡してください。CI用legacy候補のdefaultとversion期待値は解決した版を使います。公開サイトのdefault設定と、digest固定のformicarium検証入力は別に保持します。
+ローカルのnative buildにはLinux x86-64とmuslのビルド環境が必要です。macOSなどではCIの`latest-guests`成果物を展開し、`TERRARIUM_GUEST_SITE`に指定できます。毎回最新を再解決するため、古いtagやcommitの成果物は検証前に拒否します。取得・buildに失敗しても旧版へfallbackしません。詳しくは[タスクの運用](../../integration/tasks.md)を参照してください。
 
 ### ローカル候補の確定と復旧
 

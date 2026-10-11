@@ -125,7 +125,7 @@ Run the matching task before pushing; the ruleset requires these checks.
 | ---- | -------- |
 | `lint:all` | `test-lint-check.yml` (Polyglot lint) |
 | `ci:terrarium` | `test-terrarium.yml` (type-check, unit tests, build) |
-| `ci:e2e` | `test-e2e.yml` (E2E in Chromium, Firefox, WebKit) |
+| `ci:e2e` | `build-latest-guests.yml` (latest guests in Chromium, Firefox, WebKit) |
 
 `lint-autofix.yml` runs `lint:all:fix` on every PR and
 `lint-autofix-apply.yml` pushes the result back to the PR's branch with
