@@ -7,7 +7,15 @@
     "./session": "./src/session.ts"
   },
   "publish": {
-    "include": ["src/**/*.ts", "README.md", "LICENSE", "jsr.json"],
-    "exclude": ["!src/generated", "src/npm.ts"]
+    "include": [
+      "src/**/*.ts",
+      "README.md",
+      "LICENSE",
+      "jsr.json"
+    ],
+    "exclude": [
+      "!src/generated",
+      "src/npm.ts"
+    ]
   }
 }
