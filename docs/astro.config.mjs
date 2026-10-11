@@ -20,6 +20,7 @@ export default defineConfig({
         { label: 'Embedding', link: '/guides/embedding/' },
         { label: 'Source builds', link: '/guides/source-builds/' },
         { label: 'Demos', link: '/demos/' },
+        { label: 'Releases', link: '/guides/releases/' },
       ],
     }),
   ],

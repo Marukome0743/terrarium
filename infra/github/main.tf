@@ -111,12 +111,14 @@ resource "github_repository_ruleset" "main" {
 
 locals {
   labels = {
-    "type: bug"      = { color = "d73a4a", description = "Something isn't working" }
-    "type: feature"  = { color = "a2eeef", description = "New feature or capability" }
-    "type: docs"     = { color = "0075ca", description = "Documentation improvements" }
-    "type: refactor" = { color = "cfd3d7", description = "Code refactoring without behavior change" }
-    "type: test"     = { color = "bfdadc", description = "Test additions or improvements" }
-    "type: chore"    = { color = "fef2c0", description = "Maintenance tasks" }
+    "autorelease: pending" = { color = "ededed", description = "Release PR awaiting review and merge" }
+    "autorelease: tagged"  = { color = "ededed", description = "Release PR tagged and released" }
+    "type: bug"            = { color = "d73a4a", description = "Something isn't working" }
+    "type: feature"        = { color = "a2eeef", description = "New feature or capability" }
+    "type: docs"           = { color = "0075ca", description = "Documentation improvements" }
+    "type: refactor"       = { color = "cfd3d7", description = "Code refactoring without behavior change" }
+    "type: test"           = { color = "bfdadc", description = "Test additions or improvements" }
+    "type: chore"          = { color = "fef2c0", description = "Maintenance tasks" }
 
     "scope: ci"    = { color = "ededed", description = "CI/CD pipeline" }
     "scope: docs"  = { color = "c2e0c6", description = "Design notes under aidlc/spaces/*/knowledge and docs/" }

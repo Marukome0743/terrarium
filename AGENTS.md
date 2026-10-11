@@ -147,9 +147,11 @@ PR from a fork, run `mise run lint:all:fix` locally.
   Node and all three browsers must pass before Pages deployment. Build outputs
   never go on `main`; the legacy `builds` branch is no longer used by Pages.
 - **The package** is published to npm and JSR by
-  `publish-terrarium.yml` on a `terrarium-v<version>` tag, with OIDC and
-  provenance. Bump `version` in both `package.json` and `jsr.json` first.
-- **GitHub releases** come from `release.yml` on a `v<semver>` tag.
+  `publish-terrarium.yml` on a `v<version>` tag, with OIDC and provenance.
+- **Release Please** in `release.yml` prepares a repository-wide release PR,
+  updating `version.txt` and both public package manifests. A human merges it
+  to authorize the tag and GitHub Release. Enable reconciliation only after
+  the Bot and registries are configured; see `docs/src/content/docs/guides/releases.md`.
 
 ## 5. When in doubt
 

@@ -111,8 +111,10 @@ aube crate and running `wasm-opt` over the linked module.
 `packages/terrarium` is published as `@aletheia-works/terrarium` to npm
 and JSR by `.github/workflows/publish-terrarium.yml`, as vivarium
 publishes its MCP server: OIDC trusted publishing with provenance, no
-registry tokens. Bump `version` in both `package.json` and `jsr.json`,
-merge, then push a tag `terrarium-v<version>`. The workflow builds, tests,
+registry tokens. Release Please prepares a shared version in `version.txt`,
+`package.json` and `jsr.json`; merge its reviewed PR to create `v<version>`
+and the GitHub Release. See [the release guide](../../../../../docs/src/content/docs/guides/releases.md)
+for the staged setup and manual retry procedure. The workflow builds, tests,
 and skips a registry that already has that version.
 
 npm's `"."` is `src/npm.ts`, which adds the global types for the element's

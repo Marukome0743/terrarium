@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "198f58965109c8776cf9babe3b6be5e55582a2f5",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
+  "pull-request-header": "Release Please calculated this shared version from Conventional Commits. Review and merge this PR to create the Terrarium tag and GitHub release, then publish the terminal package to npm and JSR.",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "component": "terrarium",
+      "include-component-in-tag": false,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "packages/terrarium/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "packages/terrarium/jsr.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}

@@ -148,3 +148,5 @@ biome lint lint.js
 `lint.js` deliberately contains a debugger statement, so its lint command exits
 with diagnostics. Files stay in the session between commands. Use the CLI
 directly; daemon and language-server processes are outside this terminal's scope.
+
+Release maintainers: see the [release automation guide](docs/src/content/docs/guides/releases.md).
