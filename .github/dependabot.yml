@@ -28,3 +28,17 @@ updates:
       terrarium-deps:
         patterns:
           - "*"
+
+  - package-ecosystem: "bun"
+    directory: "/docs"
+    schedule:
+      interval: "daily"
+    labels:
+      - "type: chore"
+      - "scope: docs"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      documentation-deps:
+        patterns:
+          - "*"

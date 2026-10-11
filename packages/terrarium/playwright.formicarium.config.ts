@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export const SITE = 'http://127.0.0.1:8880';
+export const PAGES = 'http://127.0.0.1:8882';
 export const HOST = 'http://127.0.0.1:8881';
 const bun = process.env.TERRARIUM_BUN;
 const site = process.env.TERRARIUM_SITE_DIR;
@@ -26,6 +27,11 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: [
+    {
+      command: `"${bun}" e2e/formicarium-serve.ts "${site}" 8882 pages`,
+      url: `${PAGES}/web/`,
+      reuseExistingServer: false,
+    },
     {
       command: `"${bun}" e2e/formicarium-serve.ts "${site}" 8880`,
       url: `${SITE}/element.html`,

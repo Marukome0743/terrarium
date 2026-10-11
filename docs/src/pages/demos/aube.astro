@@ -1,0 +1,50 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/web/`;
+---
+<StarlightPage frontmatter={{ title: 'aube demo', description: 'Run aube in a browser terminal.', tableOfContents: false }}>
+  <p>Explore the preloaded local dependency project. Try <code>aube --version</code>, <code>ls</code> or <code>cat package.json</code>. Reloading resets this session.</p>
+  <p><a href={`${base}?tool=aube`}>Open the original console</a></p>
+  <p id="demo-status" role="status">Preparing the browser terminal…</p>
+  <div id="aube-demo" data-base={base}></div>
+  <script is:inline src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/coi-serviceworker.js`}></script>
+  <script>
+    const host = document.querySelector<HTMLElement>('#aube-demo')!;
+    const status = document.querySelector<HTMLElement>('#demo-status')!;
+    async function start() {
+      if (!crossOriginIsolated) {
+        status.textContent = 'Preparing cross-origin isolation. Allow Service Workers and reload if this message remains.';
+        return;
+      }
+      const base = host.dataset.base!;
+      try {
+        await import(/* @vite-ignore */ `${base}terrarium.mjs`);
+        const terminal = document.createElement('terrarium-terminal');
+        terminal.setAttribute('tool', 'aube');
+        terminal.setAttribute('base', base);
+        const query = new URLSearchParams(location.search);
+        for (const name of ['ref', 'fixture', 'cwd']) {
+          if (query.has(name)) terminal.setAttribute(name, query.get(name)!);
+        }
+        const commands = query.getAll('run');
+        if (commands.length) terminal.setAttribute('run', commands.join('\n'));
+        terminal.addEventListener('terrarium-ready', (event) => {
+          const { ref, commit } = (event as CustomEvent).detail;
+          status.textContent = `Ready: aube ${ref} · ${commit}`;
+        });
+        terminal.addEventListener('terrarium-error', (event) => {
+          status.textContent = `Terminal error: ${String((event as CustomEvent).detail.message ?? (event as CustomEvent).detail)}`;
+        });
+        host.append(terminal);
+      } catch (error) {
+        status.textContent = `Unable to load the terminal: ${String(error)}`;
+      }
+    }
+    void start();
+  </script>
+</StarlightPage>
+<style>
+  #aube-demo { height: 32rem; min-width: 0; }
+  #aube-demo :global(terrarium-terminal) { display: block; height: 100%; }
+  #demo-status { overflow-wrap: anywhere; }
+</style>

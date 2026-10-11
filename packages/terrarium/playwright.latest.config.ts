@@ -4,6 +4,7 @@ export default defineConfig({
   ...config,
   testMatch: [
     'latest-tools.spec.ts',
+    'docs.spec.ts',
     'formicarium-terminal.spec.ts',
     'formicarium-iframe.spec.ts',
   ],

@@ -100,3 +100,6 @@ aidlc/diagnostics/
 # Playwright output.
 test-results/
 playwright-report/
+
+# Astro generated content types and cache.
+docs/.astro/

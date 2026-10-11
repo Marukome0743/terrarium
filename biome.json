@@ -23,6 +23,7 @@
       "!fixtures",
       "!web/coi-serviceworker.js",
       "!**/generated",
+      "!docs/.astro",
       "!.site",
       "!.rumdl_cache"
     ]
@@ -82,5 +83,16 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.astro"],
+      "linter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
+    }
+  ]
 }

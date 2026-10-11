@@ -1,7 +1,8 @@
 import { resolve, sep } from 'node:path';
 import { file } from 'bun';
 
-const [rootArg = '../../.site', portArg = '8880'] = process.argv.slice(2);
+const [rootArg = '../../.site', portArg = '8880', mode = 'isolated'] =
+  process.argv.slice(2);
 const root = resolve(rootArg);
 const fixtureRoot = resolve(import.meta.dir, 'host/formicarium');
 Bun.serve({
@@ -10,14 +11,15 @@ Bun.serve({
   async fetch(request) {
     const url = new URL(request.url);
     const plain = url.pathname.startsWith('/plain/');
-    const pathname = plain ? url.pathname.slice('/plain'.length) : url.pathname;
+    const route = plain ? url.pathname.slice('/plain'.length) : url.pathname;
+    const pathname = route.replace(/^\/terrarium(?=\/|$)/, '') || '/';
     // Permit the child document to load under a cross-origin parent's COEP.
     // /plain still omits COOP/COEP so it remains a genuine non-isolated fixture.
     const headers: Record<string, string> = {
       'access-control-allow-origin': '*',
       'cross-origin-resource-policy': 'cross-origin',
     };
-    if (!plain) {
+    if (!plain && mode !== 'pages') {
       headers['cross-origin-opener-policy'] = 'same-origin';
       headers['cross-origin-embedder-policy'] = 'require-corp';
     }
@@ -29,7 +31,7 @@ Bun.serve({
     } catch {
       return new Response('bad path', { status: 400, headers });
     }
-    if (!target.startsWith(`${boundary}${sep}`))
+    if (target !== boundary && !target.startsWith(`${boundary}${sep}`))
       return new Response('forbidden', { status: 403, headers });
     if (pathname.endsWith('/')) target = resolve(target, 'index.html');
     const body = file(target);

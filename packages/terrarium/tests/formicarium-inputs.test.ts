@@ -136,13 +136,26 @@ test('assembly preflight preserves an existing output when fixed inputs are miss
   await writeFile(path.join(f.output, 'baseline'), 'preserved');
   const script = new URL('../../../mise-tasks/site/build.sh', import.meta.url)
     .pathname;
+  const bin = path.join(f.root, 'bin');
+  const installMarker = path.join(f.root, 'docs-install-started');
+  await mkdir(bin);
+  await writeFile(
+    path.join(bin, 'bun'),
+    '#!/bin/sh\nprintf called > "$DOCS_INSTALL_MARKER"\nexit 99\n',
+    { mode: 0o755 },
+  );
   const result = Bun.spawnSync(['bash', script, f.output], {
     env: {
       ...process.env,
       FORMICARIUM_INPUTS_ROOT: path.join(f.root, 'missing'),
+      PATH: `${bin}${path.delimiter}${process.env.PATH}`,
+      DOCS_INSTALL_MARKER: installMarker,
     },
   });
   expect(result.exitCode).not.toBe(0);
+  await expect(readFile(installMarker)).rejects.toMatchObject({
+    code: 'ENOENT',
+  });
   expect(result.stderr.toString()).toContain(path.join(f.root, 'missing'));
   expect(await readFile(path.join(f.output, 'baseline'), 'utf8')).toBe(
     'preserved',

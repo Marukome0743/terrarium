@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { cp, readFile, writeFile } from 'node:fs/promises';
+import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -33,11 +33,19 @@ export async function assembleCandidate({
   inputs,
   sourceRoot = ROOT,
   bundle,
+  docs,
 } = {}) {
   if (mode !== 'formicarium') throw new Error(`unknown assembly mode: ${mode}`);
   if (!/^[a-zA-Z0-9_.-]+$/.test(version))
     throw new Error('invalid version stamp');
   const prepared = await prepareFormicarium(inputs ?? (await explicitInputs()));
+  if (!docs) {
+    // Reject missing or invalid guest inputs before dependency installation or
+    // type-checking, including on a fresh CI checkout without a docs cache.
+    const docsRoot = path.join(sourceRoot, 'docs');
+    await command('bun', ['install', '--frozen-lockfile'], docsRoot);
+    await command('bun', ['run', 'check'], docsRoot);
+  }
   return candidateTransaction({
     destination,
     protectedPaths: [
@@ -101,10 +109,31 @@ export async function assembleCandidate({
         await writeFile(filename, text.replace(from, to));
       }
       await checkpoint('assembly-stamp', { work });
-      await writeFile(
-        await candidateFile(work, 'index.html'),
-        `<!doctype html>\n<meta charset="utf-8" />\n<script>location.replace('web/' + location.search);</script>\n<meta http-equiv="refresh" content="0; url=web/" />\n<title>terrarium</title>\n<a href="web/">terrarium</a>\n`,
-      );
+      if (docs) await docs(work);
+      else {
+        // Astro clears its output directory: build separately so it cannot erase
+        // the verified guest assets before the candidate transaction commits.
+        const output = path.join(work, '.docs-output');
+        await command(
+          'bun',
+          ['run', 'build', '--outDir', output],
+          path.join(sourceRoot, 'docs'),
+        );
+        for (const entry of await readdir(output)) {
+          if (['web', 'LICENSE', '.nojekyll'].includes(entry))
+            throw new Error(
+              `documentation output collides with runtime: ${entry}`,
+            );
+          await cp(path.join(output, entry), path.join(work, entry), {
+            recursive: true,
+          });
+        }
+        await rm(output, { recursive: true });
+        await cp(
+          path.join(sourceRoot, 'web/coi-serviceworker.js'),
+          await candidateFile(work, 'coi-serviceworker.js'),
+        );
+      }
       await checkpoint('assembly-root', { work });
       return { version, mode };
     },

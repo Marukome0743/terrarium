@@ -45,6 +45,12 @@ async function setup(old = true) {
     before,
     mode: 'formicarium',
     version: 'test-version',
+    docs: async (work: string) => {
+      await writeFile(
+        path.join(work, 'index.html'),
+        '<h1>terrarium documentation</h1>',
+      );
+    },
     bundle: async (work: string) => {
       await writeFile(path.join(work, 'web/terrarium.mjs'), 'export {};');
     },
@@ -62,7 +68,7 @@ test('assembly creates bundle stamps root entry and completed candidate', async 
   ).toContain('terrarium.mjs?v=test-version');
   expect(
     await readFile(path.join(input.destination, 'index.html'), 'utf8'),
-  ).toContain("location.replace('web/'");
+  ).toContain('terrarium documentation');
   expect(await candidateInventory(result.transaction.retained)).toEqual(
     input.before,
   );
@@ -153,3 +159,16 @@ for (const boundary of ['file', 'parent']) {
     expect(await candidateInventory(input.destination)).toEqual(input.before);
   });
 }
+
+test('documentation build failure preserves the accepted runtime and site', async () => {
+  const input = await setup();
+  await expect(
+    assembleCandidate({
+      ...input,
+      docs: async () => {
+        throw new Error('docs build failed');
+      },
+    }),
+  ).rejects.toThrow('docs build failed');
+  expect(await candidateInventory(input.destination)).toEqual(input.before);
+});
