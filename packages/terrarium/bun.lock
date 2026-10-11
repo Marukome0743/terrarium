@@ -1,11 +1,10 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "@aletheia-works/terrarium",
       "dependencies": {
-        "@aletheia-works/formicarium": "0.1.0-rc.1",
+        "@aletheia-works/formicarium": "0.2.1",
         "@xterm/addon-fit": "^0.11.0",
         "@xterm/xterm": "^6.0.0",
       },
@@ -18,7 +17,7 @@
     },
   },
   "packages": {
-    "@aletheia-works/formicarium": ["@aletheia-works/formicarium@0.1.0-rc.1", "", {}, "sha512-SIFbXU1QkxXDATkE0M1Prm65Kq+Q2SkwnDyBwRf/ejEd3mADZT5uueETF+r0AAl4nuDRqbbSkBc7K/fHclwICA=="],
+    "@aletheia-works/formicarium": ["@aletheia-works/formicarium@0.2.1", "", {}, "sha512-Xp4ufmxpdH+ug9mrp5YhTp/NaA6fgjEx4dGUol8kGUIq0pp/rA9rzSMcKY1in9onebWroimoFk9hDmeFHX8Gxg=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
 

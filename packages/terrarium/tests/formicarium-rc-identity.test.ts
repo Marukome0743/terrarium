@@ -22,7 +22,7 @@ async function fixture() {
       dist: {
         integrity: RC_INTEGRITY,
         tarball:
-          'https://registry.npmjs.org/@aletheia-works/formicarium/-/formicarium-0.1.0-rc.1.tgz',
+          'https://registry.npmjs.org/@aletheia-works/formicarium/-/formicarium-0.2.1.tgz',
       },
     },
     lock: await readFile(new URL('../bun.lock', import.meta.url), 'utf8'),

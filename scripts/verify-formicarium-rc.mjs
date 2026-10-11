@@ -4,18 +4,18 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { archiveFiles } from './prepare-formicarium.mjs';
 
-export const RC_VERSION = '0.1.0-rc.1';
+export const RC_VERSION = '0.2.1';
 export const RC_SHA256 =
-  '8334d7f14c31109e5be3ec90147aa02105d8d839c4c79eccc1c25cb88eabbb3a';
+  '71ae44f6f8d9de62cda1256e293025bcb40c67c00836f99767e435c478df7e35';
 export const RC_NAME = '@aletheia-works/formicarium';
 export const RC_INTEGRITY =
-  'sha512-SIFbXU1QkxXDATkE0M1Prm65Kq+Q2SkwnDyBwRf/ejEd3mADZT5uueETF+r0AAl4nuDRqbbSkBc7K/fHclwICA==';
+  'sha512-Xp4ufmxpdH+ug9mrp5YhTp/NaA6fgjEx4dGUol8kGUIq0pp/rA9rzSMcKY1in9onebWroimoFk9hDmeFHX8Gxg==';
 const digest = (bytes, algorithm = 'sha256', encoding = 'hex') =>
   createHash(algorithm).update(bytes).digest(encoding);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const RC_TARBALL = path.join(
   root,
-  '.vendor/formicarium-rc-acceptance/aletheia-works-formicarium-0.1.0-rc.1.tgz',
+  '.vendor/formicarium-rc-acceptance/aletheia-works-formicarium-0.2.1.tgz',
 );
 export const RC_PACKAGE = path.join(
   root,

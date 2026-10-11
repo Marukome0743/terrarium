@@ -29,10 +29,10 @@ published `Session` API, element attributes/events, and iframe protocol when
 changing the adapter. The iframe approves exact parent origins before commands
 or notifications are exchanged.
 
-The formicarium package is pinned to `@aletheia-works/formicarium@0.1.0-rc.1`.
+The formicarium package is pinned to `@aletheia-works/formicarium@0.2.1`.
 The fixed descriptor in `integration/formicarium-inputs.json` identifies the
 runtime, resolver and accepted input assets. The npm tarball SHA256 is
-`8334d7f14c31109e5be3ec90147aa02105d8d839c4c79eccc1c25cb88eabbb3a`.
+`71ae44f6f8d9de62cda1256e293025bcb40c67c00836f99767e435c478df7e35`.
 Preparation verifies package version, registry integrity, tarball digest and
 fixed-file identities before dependency installation or assembly.
 

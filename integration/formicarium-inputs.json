@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "tarball": "package/aletheia-works-formicarium-0.1.0-rc.1.tgz",
+  "tarball": "package/aletheia-works-formicarium-0.2.1.tgz",
   "packageManifest": "package/manifest.json",
   "resolver": "resolver",
   "guestSite": "guests",
@@ -61,14 +61,14 @@
       "sha256": "64a712e6ed381694d69cb434bba07b5f5e49daf13a7238709e039b3f2e96cae4"
     },
     {
-      "path": "package/aletheia-works-formicarium-0.1.0-rc.1.tgz",
-      "size": 234396,
-      "sha256": "8334d7f14c31109e5be3ec90147aa02105d8d839c4c79eccc1c25cb88eabbb3a"
+      "path": "package/aletheia-works-formicarium-0.2.1.tgz",
+      "size": 240670,
+      "sha256": "71ae44f6f8d9de62cda1256e293025bcb40c67c00836f99767e435c478df7e35"
     },
     {
       "path": "package/manifest.json",
-      "size": 3713,
-      "sha256": "b57fef8c92fac70d47b4997caf4dca622a012a5788422dc0d1a7db469d04f97c"
+      "size": 3703,
+      "sha256": "563161b0ac0b1a79d3b35471159501b826791407fcd23e0efa7f88fde7b25432"
     },
     {
       "path": "resolver/fixtures.js",
@@ -87,11 +87,8 @@
     }
   ],
   "publishedRc": {
-    "integrity": "sha512-SIFbXU1QkxXDATkE0M1Prm65Kq+Q2SkwnDyBwRf/ejEd3mADZT5uueETF+r0AAl4nuDRqbbSkBc7K/fHclwICA==",
-    "tarballSha256": "8334d7f14c31109e5be3ec90147aa02105d8d839c4c79eccc1c25cb88eabbb3a",
-    "tarballUrl": "https://registry.npmjs.org/@aletheia-works/formicarium/-/formicarium-0.1.0-rc.1.tgz"
-  },
-  "distribution": {
-    "archiveSha256": "f8b5493047389bc4033dee2608070cc4636c43006877145f0be27f72f11348c4"
+    "integrity": "sha512-Xp4ufmxpdH+ug9mrp5YhTp/NaA6fgjEx4dGUol8kGUIq0pp/rA9rzSMcKY1in9onebWroimoFk9hDmeFHX8Gxg==",
+    "tarballSha256": "71ae44f6f8d9de62cda1256e293025bcb40c67c00836f99767e435c478df7e35",
+    "tarballUrl": "https://registry.npmjs.org/@aletheia-works/formicarium/-/formicarium-0.2.1.tgz"
   }
 }

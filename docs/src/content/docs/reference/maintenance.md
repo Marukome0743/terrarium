@@ -17,7 +17,7 @@ Bun is the package manager. Keep the public package's lockfile at format version
 1, which Dependabot understands.
 
 Set `FORMICARIUM_INPUTS_DIR` to the verified fixed-input bundle. Preparation also
-fetches the exact npm RC tarball and validates its integrity before installing
+fetches the exact npm package tarball and validates its integrity before installing
 frozen dependencies. The fixed runtime and latest guest selection have separate
 identities: a fixed acceptance catalogue cannot silently replace latest guests.
 

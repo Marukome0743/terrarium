@@ -118,5 +118,5 @@ description = "Verify an explicit fixed formicarium input directory before insta
 run = 'bun scripts/prepare-formicarium.mjs --from "$FORMICARIUM_INPUTS_DIR"'
 
 [tasks."terrarium:rc:prepare"]
-description = "Acquire the pinned npm RC tarball and verify SHA256 and integrity before tests"
+description = "Acquire the pinned npm package tarball and verify SHA256 and integrity before tests"
 run = "node scripts/fetch-formicarium-rc.mjs"

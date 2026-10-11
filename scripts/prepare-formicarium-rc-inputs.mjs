@@ -2,11 +2,13 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { verifyInputs } from './prepare-formicarium.mjs';
+import { archiveFiles, verifyInputs } from './prepare-formicarium.mjs';
 import {
-  RC_PACKAGE,
+  RC_INTEGRITY,
+  RC_NAME,
   RC_TARBALL,
-  verifyInstalledRc,
+  RC_VERSION,
+  verifyTarball,
 } from './verify-formicarium-rc.mjs';
 
 const _root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -29,10 +31,21 @@ const source = args.from;
 const output = args.output;
 const descriptor = JSON.parse(await readFile(args.descriptor));
 await verifyInputs(source, descriptor);
-const identity = await verifyInstalledRc();
-const build = JSON.parse(
-  await readFile(path.join(RC_PACKAGE, 'assets/build-info.json')),
-);
+const tarball = await readFile(RC_TARBALL);
+const identity = verifyTarball(tarball, {
+  name: RC_NAME,
+  version: RC_VERSION,
+  dist: {
+    integrity: RC_INTEGRITY,
+    tarball: `https://registry.npmjs.org/${RC_NAME}/-/formicarium-${RC_VERSION}.tgz`,
+  },
+});
+const packed = archiveFiles(tarball);
+const build = JSON.parse(packed.get('package/assets/build-info.json'));
+identity.files = [...packed].map(([name, bytes]) => ({
+  path: name.slice('package/'.length),
+  sha256: createHash('sha256').update(bytes).digest('hex'),
+}));
 const manifest = {
   schemaVersion: 1,
   package: identity.name,
@@ -52,7 +65,9 @@ const manifest = {
 const values = new Map();
 for (const row of descriptor.files) {
   values.set(
-    row.path,
+    row.path === descriptor.tarball
+      ? `package/${path.basename(RC_TARBALL)}`
+      : row.path,
     row.path === descriptor.tarball
       ? await readFile(RC_TARBALL)
       : row.path === descriptor.packageManifest
@@ -62,6 +77,8 @@ for (const row of descriptor.files) {
 }
 const updated = {
   ...descriptor,
+  tarball: `package/${path.basename(RC_TARBALL)}`,
+  distribution: undefined,
   publishedRc: manifest.publishedRc,
   files: [...values].map(([filename, bytes]) => ({
     path: filename,
