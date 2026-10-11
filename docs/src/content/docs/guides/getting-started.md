@@ -3,8 +3,9 @@ title: Getting started
 description: Try the browser terminal and understand its limits.
 ---
 
-Open the [aube demo](/terrarium/demos/aube/). Its local dependency fixture
-is loaded automatically. Try `aube --version`, `ls` and `cat package.json`.
+Choose a CLI from the [CLI consoles](/terrarium/demos/) cards. Each opens a
+dedicated terminal with its preloaded project. For example, the
+[aube console](/terrarium/demos/aube/) loads a local dependency fixture. Try `aube --version`, `ls` and `cat package.json`.
 
 The terminal runs one CLI build at a time. Files persist across commands within
 that session; reloading the page starts a fresh session. No server executes your

@@ -1,6 +1,6 @@
 # Documentation site
 
-Astro + Starlight builds the documentation, search index and aube demo. The
+Astro + Starlight builds the documentation, search index and dedicated CLI consoles. The
 production base is `/terrarium/`. English content initially follows the existing
 repository documentation.
 
@@ -21,7 +21,7 @@ isolate Workers under `/web/`. Visiting documentation alone registers no worker
 and loads no guest; documentation remains usable after a demo registers it.
 
 The root URL opens documentation. Link to `/web/` directly for the console and
-iframe, or `/demos/aube/` for the dedicated demo. These terminal entries accept
+iframe, or `/demos/` for the CLI cards and dedicated consoles. These terminal entries accept
 their query parameters directly. Demo `run` parameters use the terminal's newline
 command format. Never add another Pages deployment workflow for this site.
 

@@ -1,0 +1,24 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import tools from '../../../../web/tools.json';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<StarlightPage frontmatter={{ title: 'CLI consoles', description: 'Choose a CLI to run in your browser.', tableOfContents: false }}>
+  <p>Choose a CLI to open its dedicated terminal with a preloaded project.</p>
+  <div class="cli-cards">
+    {Object.entries(tools).map(([tool, config]) => (
+      <a class="cli-card" href={`${base}/demos/${tool}/`}>
+        <strong>{config.label}</strong>
+        <span>Open the {config.label} console →</span>
+      </a>
+    ))}
+  </div>
+  <p>You can also use the <a href={`${base}/web/`}>console with a CLI selector</a>.</p>
+</StarlightPage>
+<style>
+  .cli-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1rem; margin-block: 1.5rem; }
+  .cli-card { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.5rem; border: 1px solid var(--sl-color-gray-5); border-radius: 0.75rem; text-decoration: none; color: var(--sl-color-text); }
+  .cli-card:hover, .cli-card:focus-visible { border-color: var(--sl-color-text-accent); background: var(--sl-color-gray-6); }
+  .cli-card strong { font-size: 1.25rem; }
+  .cli-card span { color: var(--sl-color-text-accent); }
+</style>

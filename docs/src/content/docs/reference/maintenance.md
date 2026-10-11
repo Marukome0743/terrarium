@@ -49,7 +49,8 @@ search, the terminal bundle, fixtures and validated guests as one candidate.
 Avoid importing the browser-only terminal into Astro's server-side build.
 
 `/terrarium/` opens documentation; `/terrarium/web/` is the console and iframe
-entry; `/terrarium/demos/aube/` is the dedicated aube demo. Preserve query/ref and
+entry; `/terrarium/demos/` lists CLI cards; `/terrarium/demos/<tool>/` opens a dedicated console.
+The list and console routes are generated from `web/tools.json`. Preserve query/ref and
 session parameters. See [Demos](/terrarium/demos/) and [Embedding](/terrarium/guides/embedding/).
 Keep one Pages deployment workflow for the complete site.
 

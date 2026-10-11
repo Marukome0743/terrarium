@@ -44,6 +44,56 @@ test('documentation navigation and search work under the Pages base without load
   ).toBeNull();
 });
 
+test('CLI cards cover the registry without loading the runtime', async ({
+  page,
+}) => {
+  const requests: string[] = [];
+  page.on('request', (request) => {
+    if (/\/web\//.test(request.url())) requests.push(request.url());
+  });
+  await page.goto(`${PAGES}/terrarium/demos/`);
+  await expect(page.locator('.cli-card')).toHaveCount(
+    Object.keys(tools).length,
+  );
+  for (const [tool, config] of Object.entries(tools) as [
+    string,
+    { label: string },
+  ][]) {
+    await expect(
+      page.getByRole('link', {
+        name: `Open the ${config.label} console`,
+        exact: false,
+      }),
+    ).toHaveAttribute('href', `/terrarium/demos/${tool}/`);
+  }
+  expect(requests).toEqual([]);
+  expect(
+    await page.evaluate(() => navigator.serviceWorker.controller),
+  ).toBeNull();
+});
+
+for (const tool of Object.keys(tools)) {
+  test(`${tool} card opens its dedicated console`, async ({ page }) => {
+    await page.goto(`${PAGES}/terrarium/demos/`);
+    await page.locator(`.cli-card[href="/terrarium/demos/${tool}/"]`).click();
+    await expect(page.locator('#demo-status')).toContainText(`Ready: ${tool}`);
+    const result = await page.evaluate(async (tool) => {
+      const terminal = document.querySelector(
+        'terrarium-terminal',
+      ) as TerrariumTerminal;
+      return {
+        ready: await terminal.ready,
+        version: await terminal.run(`${tool} --version`),
+      };
+    }, tool);
+    expect(result.ready.tool).toBe(tool);
+    expect(result.version.code).toBe(0);
+    await expect(
+      page.getByRole('link', { name: 'All CLI consoles' }),
+    ).toHaveAttribute('href', '/terrarium/demos/');
+  });
+}
+
 test('aube dedicated demo runs the accepted guest on Pages without server isolation headers', async ({
   page,
 }) => {

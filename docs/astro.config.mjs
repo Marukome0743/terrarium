@@ -19,7 +19,7 @@ export default defineConfig({
         { label: 'Getting started', link: '/guides/getting-started/' },
         { label: 'Embedding', link: '/guides/embedding/' },
         { label: 'Source builds', link: '/guides/source-builds/' },
-        { label: 'Demos', link: '/demos/' },
+        { label: 'CLI consoles', link: '/demos/' },
         { label: 'Releases', link: '/guides/releases/' },
         { label: 'Architecture', link: '/reference/architecture/' },
         { label: 'Maintenance', link: '/reference/maintenance/' },

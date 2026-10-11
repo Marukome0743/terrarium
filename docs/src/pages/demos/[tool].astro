@@ -1,15 +1,24 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import tools from '../../../../web/tools.json';
+export function getStaticPaths() {
+  return Object.entries(tools).map(([tool, config]) => ({
+    params: { tool },
+    props: { tool, label: config.label },
+  }));
+}
+const { tool, label } = Astro.props;
 const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/web/`;
 ---
-<StarlightPage frontmatter={{ title: 'aube demo', description: 'Run aube in a browser terminal.', tableOfContents: false }}>
-  <p>Explore the preloaded local dependency project. Try <code>aube --version</code>, <code>ls</code> or <code>cat package.json</code>. Reloading resets this session.</p>
-  <p><a href={`${base}?tool=aube`}>Open the original console</a></p>
+<StarlightPage frontmatter={{ title: `${label} console`, description: `Run ${label} in a browser terminal.`, tableOfContents: false }}>
+  <p>Explore the preloaded project. Try <code>{tool} --version</code>, <code>ls</code> or <code>{tool} --help</code>. Reloading resets this session.</p>
+  <p><a href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/demos/`}>All CLI consoles</a></p>
+  <p><a href={`${base}?tool=${encodeURIComponent(tool)}`}>Open the original console</a></p>
   <p id="demo-status" role="status">Preparing the browser terminal…</p>
-  <div id="aube-demo" data-base={base}></div>
+  <div id="cli-demo" data-base={base} data-tool={tool}></div>
   <script is:inline src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/coi-serviceworker.js`}></script>
   <script>
-    const host = document.querySelector<HTMLElement>('#aube-demo')!;
+    const host = document.querySelector<HTMLElement>('#cli-demo')!;
     const status = document.querySelector<HTMLElement>('#demo-status')!;
     async function start() {
       if (!crossOriginIsolated) {
@@ -20,7 +29,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/web/`;
       try {
         await import(/* @vite-ignore */ `${base}terrarium.mjs`);
         const terminal = document.createElement('terrarium-terminal');
-        terminal.setAttribute('tool', 'aube');
+        terminal.setAttribute('tool', host.dataset.tool!);
         terminal.setAttribute('base', base);
         const query = new URLSearchParams(location.search);
         for (const name of ['ref', 'fixture', 'cwd']) {
@@ -30,7 +39,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/web/`;
         if (commands.length) terminal.setAttribute('run', commands.join('\n'));
         terminal.addEventListener('terrarium-ready', (event) => {
           const { ref, commit } = (event as CustomEvent).detail;
-          status.textContent = `Ready: aube ${ref} · ${commit}`;
+          status.textContent = `Ready: ${host.dataset.tool} ${ref} · ${commit}`;
         });
         terminal.addEventListener('terrarium-error', (event) => {
           status.textContent = `Terminal error: ${String((event as CustomEvent).detail.message ?? (event as CustomEvent).detail)}`;
@@ -44,7 +53,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/web/`;
   </script>
 </StarlightPage>
 <style>
-  #aube-demo { height: 32rem; min-width: 0; }
-  #aube-demo :global(terrarium-terminal) { display: block; height: 100%; }
+  #cli-demo { height: 32rem; min-width: 0; }
+  #cli-demo :global(terrarium-terminal) { display: block; height: 100%; }
   #demo-status { overflow-wrap: anywhere; }
 </style>
