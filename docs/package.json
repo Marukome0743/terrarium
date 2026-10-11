@@ -4,14 +4,13 @@
   "type": "module",
   "scripts": {
     "build": "astro build",
-    "check": "astro check"
+    "check": "astro sync && tsc --noEmit && bun install --cwd tooling/astro-check --frozen-lockfile && bun run --cwd tooling/astro-check check"
   },
   "dependencies": {
     "@astrojs/starlight": "0.42.6",
     "astro": "7.3.8"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
-    "typescript": "6"
+    "typescript": "7.0.2"
   }
 }

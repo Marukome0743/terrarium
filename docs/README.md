@@ -26,6 +26,17 @@ their query parameters directly. Demo `run` parameters use the terminal's newlin
 command format. Never add another Pages deployment workflow for this site.
 
 Biome's Astro support only analyzes frontmatter, so its JS unused-reference and
-import autofixes are disabled for `.astro` files. `astro check` verifies the
-complete templates instead. TypeScript 6 is used because this checker does not
-yet support TypeScript 7.
+import autofixes are disabled for `.astro` files. `bun run check` first syncs
+Astro's generated types and runs the project's TypeScript 7 compiler, then runs
+the official `astro-check` CLI to verify complete templates.
+
+Astro's current checker uses TypeScript's JavaScript compiler API and declares a
+TypeScript 5/6 peer dependency; the native TypeScript 7.0 compiler does not provide
+that API. `tooling/astro-check/` is an isolated, private tooling package with its
+own frozen lockfile. Its compatible TypeScript 6 peer is a tool implementation
+dependency, while both project packages use TypeScript 7. No type checks are
+skipped. The site assembly installs and runs both checkers after validating the
+fixed guest inputs. Dependabot updates the isolated checker in the docs group.
+
+Astro's new content mapper requires TypeScript 7.1 or later. Revisit this isolated
+checker once that integration supports a stable TypeScript release.

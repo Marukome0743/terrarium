@@ -30,7 +30,9 @@ updates:
           - "*"
 
   - package-ecosystem: "bun"
-    directory: "/docs"
+    directories:
+      - "/docs"
+      - "/docs/tooling/astro-check"
     schedule:
       interval: "daily"
     labels:
