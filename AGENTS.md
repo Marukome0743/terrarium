@@ -149,9 +149,10 @@ PR from a fork, run `mise run lint:all:fix` locally.
 - **The package** is published to npm and JSR by
   `publish-terrarium.yml` on a `v<version>` tag, with OIDC and provenance.
 - **Release Please** in `release.yml` prepares a repository-wide release PR,
-  updating `version.txt` and both public package manifests. A human merges it
-  to authorize the tag and GitHub Release. Enable reconciliation only after
-  the Bot and registries are configured; see `docs/src/content/docs/guides/releases.md`.
+  updating `version.txt` and both public package manifests. The first release is
+  human-approved; optional weekly merges require separate maintainer activation
+  and all main checks. Enable reconciliation only after the Bot and registries
+  are configured; see `docs/src/content/docs/guides/releases.md`.
 
 ## 5. When in doubt
 

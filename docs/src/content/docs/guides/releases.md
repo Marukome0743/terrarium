@@ -41,17 +41,42 @@ without contacting GitHub or publishing anything.
 4. Set the repository variable `RELEASE_AUTOMATION_ENABLED` to `true`, then run
    **Release** on `main`. Review and merge the first release PR to authorize
    tag creation and publication. Confirm the GitHub Release and both registries.
-5. After the first successful release, add Vivarium's weekly release PR merge
-   workflow in a follow-up change. This first stage requires manual PR merging.
+5. After confirming the first GitHub Release and successful npm/JSR publication,
+   set `WEEKLY_RELEASE_MERGE_ENABLED` to `true`. The first release remains manually
+   reviewed; weekly merging is disabled until this separate activation.
 
 Until step 4, automatic reconciliation is skipped. This allows prerequisites to
 be installed without failed Bot jobs or an unintended first release. No workflow
 in this rollout bypasses the main ruleset or publishes from the setup PR.
 
+## Weekly release PR merge
+
+**Merge release PR** runs every Monday at **09:23 JST (00:23 UTC)**, or manually
+from Actions on `main`. GitHub may delay scheduled execution. Both
+`RELEASE_AUTOMATION_ENABLED` and `WEEKLY_RELEASE_MERGE_ENABLED` must be `true`.
+Setting the weekly variable to `false` pauses future merge requests; to stop an
+already requested auto-merge, disable auto-merge on that PR too.
+
+The workflow selects one open, non-draft PR targeting `main`, with the exact
+`release-please--branches--main--components--terrarium` branch, the
+`autorelease: pending` label, and `aletheia-works-bot` as author. Fork PRs are
+excluded. No candidate is a successful no-op; multiple candidates stop the run.
+It requests squash auto-merge for the selected head SHA and does not bypass
+required checks or reviews. If requirements remain unsatisfied, GitHub waits;
+merging may therefore happen after Monday. A changed head at the time of the
+request is rejected, and later changes still need to pass the main ruleset.
+
+Release reconciliation and merge requests share the `release-please` concurrency
+group. The App token ensures that merging triggers reconciliation and publishing.
+This workflow only requests a PR merge; publication runs separately.
+
 ## Recovery
 
 For Release Please errors, fix the configuration or Bot permissions and run
 **Release** again on `main`.
+
+For weekly merge errors, inspect the reported candidate, head SHA, conflicts,
+checks and reviews, then rerun **Merge release PR** on `main`.
 
 For a failed registry publication, run **publish-terrarium** manually with the
 existing `v<version>` tag. It checks out that exact tag and requires repository,
