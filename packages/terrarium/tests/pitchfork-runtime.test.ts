@@ -23,7 +23,6 @@ const workspace = resolve(import.meta.dir, '../../..');
 const scriptPaths: Record<string, string> = {
   'resolve-ref.sh': 'mise-tasks/build/resolve.sh',
   'stage-web.sh': 'mise-tasks/web/stage.sh',
-  'prepare-pitchfork-e2e.sh': 'mise-tasks/ci/pitchfork-prepare.sh',
   'vendor-patched.sh': 'scripts/vendor-patched.sh',
 };
 const bash =
@@ -128,9 +127,6 @@ if [[ "$2" == */releases/latest ]]; then echo "$GH_LATEST_TAG"; else echo '${sha
     GH_CALLS: join(root, 'gh-calls').replaceAll('\\', '/'),
     GH_FAIL: '0',
     GH_LATEST_TAG: 'v2.30.1',
-    TERRARIUM_PITCHFORK_REF: '',
-    TERRARIUM_PITCHFORK_COMMIT: '',
-    TERRARIUM_PITCHFORK_BUILD: '',
     CARGO_HOME: join(root, 'cargo').replaceAll('\\', '/'),
   };
   // Windows may retain an inherited Path instead of the supplied PATH key.
@@ -326,38 +322,6 @@ describe('pitchfork staging', () => {
     expect(result.stderr).toContain('missing build artifact');
     expect(existsSync(join(root, 'web/dist'))).toBe(false);
     expect(run('stage-web.sh', ['pitchfork']).code).not.toBe(0);
-  });
-});
-
-describe('latest pitchfork E2E staging', () => {
-  test('stages the resolved latest identity and records it for local CI without resolving again', () => {
-    write('out/pitchfork.js', 'javascript');
-    write('out/pitchfork.wasm', 'wasm');
-    environment.TERRARIUM_PITCHFORK_REF = 'v2.30.1';
-    environment.TERRARIUM_PITCHFORK_COMMIT = sha;
-    environment.TERRARIUM_PITCHFORK_BUILD = join(root, 'out');
-    const result = run('prepare-pitchfork-e2e.sh');
-    expect(result.code).toBe(0);
-    expect(existsSync(join(root, 'gh-calls'))).toBe(false);
-    expect(
-      JSON.parse(
-        readFileSync(join(root, '.vendor/pitchfork-e2e.json'), 'utf8'),
-      ),
-    ).toEqual({ ref: 'v2.30.1', commit: sha });
-    const manifest = JSON.parse(
-      readFileSync(join(root, 'web/dist/builds.json'), 'utf8'),
-    );
-    expect(manifest.builds.pitchfork['v2.30.1'].source.commit).toBe(sha);
-    expect(manifest.builds.pitchfork['v2.29.0']).toBeUndefined();
-  });
-
-  test('does not accept an older staged build as the latest release', () => {
-    write('web/dist/pitchfork/v2.29.0/pitchfork.js', 'javascript');
-    write('web/dist/pitchfork/v2.29.0/pitchfork.wasm', 'wasm');
-    const result = run('prepare-pitchfork-e2e.sh');
-    expect(result.code).not.toBe(0);
-    expect(result.stderr).toContain('Build pitchfork v2.30.1');
-    expect(existsSync(join(root, '.vendor/pitchfork-e2e.json'))).toBe(false);
   });
 });
 

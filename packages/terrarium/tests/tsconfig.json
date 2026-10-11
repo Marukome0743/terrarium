@@ -9,7 +9,8 @@
     "./**/*.ts",
     "../src/**/*.ts",
     "../e2e/**/*.ts",
-    "../playwright.config.ts"
+    "../playwright.formicarium.config.ts",
+    "../playwright.latest.config.ts"
   ],
   "exclude": []
 }
