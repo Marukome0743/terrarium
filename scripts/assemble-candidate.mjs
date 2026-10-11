@@ -34,24 +34,10 @@ export async function assembleCandidate({
   sourceRoot = ROOT,
   bundle,
 } = {}) {
-  if (!['formicarium', 'legacy'].includes(mode))
-    throw new Error(`unknown assembly mode: ${mode}`);
+  if (mode !== 'formicarium') throw new Error(`unknown assembly mode: ${mode}`);
   if (!/^[a-zA-Z0-9_.-]+$/.test(version))
     throw new Error('invalid version stamp');
-  const prepared =
-    mode === 'formicarium'
-      ? await prepareFormicarium(inputs ?? (await explicitInputs()))
-      : null;
-  if (mode === 'legacy') {
-    const builds = JSON.parse(
-      await readFile(path.join(sourceRoot, 'web/dist/builds.json'), 'utf8'),
-    );
-    if (
-      process.env.TERRARIUM_PITCHFORK_REF &&
-      !builds.builds?.pitchfork?.[process.env.TERRARIUM_PITCHFORK_REF]
-    )
-      throw new Error('missing explicit legacy pitchfork ref');
-  }
+  const prepared = await prepareFormicarium(inputs ?? (await explicitInputs()));
   return candidateTransaction({
     destination,
     protectedPaths: [
@@ -70,13 +56,8 @@ export async function assembleCandidate({
       await cp(path.join(sourceRoot, 'LICENSE'), path.join(work, 'LICENSE'));
       await writeFile(await candidateFile(work, '.nojekyll'), '');
       await checkpoint('assembly-copy', { work });
-      if (prepared) await prepared.stage(path.join(work, 'web'), checkpoint);
-      if (mode === 'legacy' && process.env.TERRARIUM_PITCHFORK_REF) {
-        const filename = await candidateFile(work, 'web/tools.json');
-        const tools = JSON.parse(await readFile(filename, 'utf8'));
-        tools.pitchfork.default = process.env.TERRARIUM_PITCHFORK_REF;
-        await writeFile(filename, `${JSON.stringify(tools, null, 2)}\n`);
-      }
+      await candidateFile(work, 'web/tools.json');
+      await prepared.stage(path.join(work, 'web'), checkpoint);
       await candidateFile(work, 'web/terrarium.mjs');
       if (bundle) await bundle(work, version);
       else {
@@ -134,9 +115,7 @@ if (
   path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
   if (!process.argv[2])
-    throw new Error(
-      'usage: assemble-candidate.mjs <site dir> [formicarium|legacy]',
-    );
+    throw new Error('usage: assemble-candidate.mjs <site dir> [formicarium]');
   const result = await assembleCandidate({
     destination: process.argv[2],
     mode: process.argv[3] ?? 'formicarium',

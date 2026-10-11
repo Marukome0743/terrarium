@@ -168,14 +168,17 @@ describe('catalogue to C3 boundary', () => {
   });
   test('legacy tools stay available without forced migration and invalid base fails', async () => {
     expect(choose(all, { tool: 'old' }).ref).toBe('main');
-    expect(usesFormicarium('old')).toBe(false);
+    expect(usesFormicarium('old')).toBe(true);
+    expect(isFormicariumBuild('old', choose(all, { tool: 'old' }).build)).toBe(
+      false,
+    );
     await expect(
       resolveChoice(
         choose(all, { tool: 'old' }),
         { base: 'https://site.invalid/' },
         resolve,
       ),
-    ).rejects.toThrow('no formicarium');
+    ).rejects.toThrow('guest identity differ');
     for (const base of [
       'file:///web/',
       'https://site.invalid/web/?x=1',

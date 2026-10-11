@@ -68,9 +68,8 @@ If unsure whether an action crosses the line, stop and ask.
 | ---- | ---- |
 | `packages/terrarium/` | The npm/JSR package: the element, the Session, unit tests (`tests/`), browser tests (`e2e/`) |
 | `web/` | The standalone page (also the iframe entry) |
-| `runtime/` | Emscripten additions (`syscalls.c`, `libterrarium.js`) and the Node.js runner |
-| `patches/` | Patches to crates, to Rust's std (`toolchain/`) and to the tools themselves (`tools/`) that let the tools build for Emscripten |
-| `scripts/` | Build, staging and site assembly scripts, called by CI and mise |
+| `scripts/` | Shared native guest resolution, staging and site assembly logic, called by CI and mise |
+| `mise-tasks/` | Discoverable shell task entrypoints, including the common native builder |
 | `fixtures/` | Projects preloaded into the terminal, and recorded sessions |
 | `infra/github/` | OpenTofu for this repository's settings, ruleset and labels |
 | `aidlc/` | AI-DLC: rules and decisions (`memory/`), design notes (`knowledge/`) |
@@ -137,14 +136,16 @@ PR from a fork, run `mise run lint:all:fix` locally.
 
 ### 4.8 Builds, Pages and publishing
 
-- **Builds** of each tool in `web/tools.json` are made by
-  `.github/workflows/pages.yml` with `mise-tasks/build/<tool>.sh` (by hand
-  with a tool and a ref, or daily for each tool's `default`) and stored on
-  the `builds` branch, rewritten as one commit. They never go on `main`.
-- **A change to a tool's own code** is a patch in `patches/tools/`, rather than
-  an upstream change; its build script applies the newest one.
-- **The site** is assembled from `main` plus those builds and deployed
-  with `actions/deploy-pages`.
+- **Builds** use formicarium with static x86-64 musl guests. Latest stable
+  releases prefer verified official binaries; source refs use the common
+  `mise-tasks/build/native.sh` Cargo builder without local patches.
+- **Source refs** in `web/tool-refs.json` and Pages manual dispatch support every
+  registered tool, branch, tag, commit and `pr-<number>`, including forks through
+  optional `repository: owner/repo`. Register builder metadata and fixtures in
+  `web/tools.json` for a new compatible tool.
+- **The site** is assembled from `main` plus same-run Actions guest artifacts.
+  Node and all three browsers must pass before Pages deployment. Build outputs
+  never go on `main`; the legacy `builds` branch is no longer used by Pages.
 - **The package** is published to npm and JSR by
   `publish-terrarium.yml` on a `terrarium-v<version>` tag, with OIDC and
   provenance. Bump `version` in both `package.json` and `jsr.json` first.

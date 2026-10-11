@@ -137,7 +137,7 @@ archive は descriptor に記載した16 regular filesをその相対pathで含�
 
 `mise run ci:terrarium` と `mise run ci:e2e` は `FORMICARIUM_INPUTS_DIR` を明示し、prepareをinstallより先に実行します。miseのenter hookによる自動installは無効です。単独のbuild/test tasksも先に上記prepare/installが必要です。CI workflow（`test-terrarium.yml`、`build-latest-guests.yml`、`pages.yml`、`publish-terrarium.yml`）は repository variable `FORMICARIUM_INPUTS_URL` に現在の固定16ファイルを含むHTTPS archiveのURLを明示する必要があります。未設定・空値はprepareおよびinstallの前に拒否し、旧archiveへのfallbackはありません。取得後に `integration/formicarium-inputs.json` の全16ファイルのpath・size・SHA-256を検証します。ローカルの正しい入力は検証済みですが、この現在入力の遠隔配布先・供給・到達性と遠隔CIの受入れは未検証です。配布URLや公開済みpackageをこの文書で仮定しません。
 
-legacy Wasmとformicarium guestは別のcatalog/siteで検証します。`mise-tasks/site/build.sh OUTPUT legacy` はstaged `web/dist`を維持し、default/formicarium modeは固定guestを配置します。browser configは `TERRARIUM_BUN` と絶対 `TERRARIUM_SITE_DIR` を必須とし、legacy terminal/pitchfork と専用45 casesを分けます。`site:build`の既定出力は従来の`.site`です。既存候補を保存する検証では別出力を使い、必要なら `TERRARIUM_PROTECTED_SITE` に保存対象の絶対pathを指定します。
+Pagesと `site:build` はformicarium guestに統一しています。`site:build`の既定出力は`.site`です。最新releaseと手動refは同じnative build・登録・Node／3ブラウザ受入れを通ります。ブランチ・コミット・PR・forkの指定と永続登録は[運用手順](../../integration/latest-tool-builds.md#registered-source-refs-and-vivarium-comparison)を参照してください。既存候補を保存する検証では別出力を使い、必要なら `TERRARIUM_PROTECTED_SITE` に保存対象の絶対pathを指定します。公開済み `Session` APIは既存利用者の互換性のため維持します。
 
 `pages.yml`と`publish-terrarium.yml`もinstall前に同じ固定入力を準備します。lint workflowsは依存installを行いません。現在の固定16ファイルを含む明示URLを必須とし、未供給時に拒否します。実Pages/実Safari受入れはローカル検証の対象外です。
 

@@ -15,26 +15,28 @@ rust_bin=$(dirname "$cargo_bin")
 export RUSTC="$rust_bin/rustc"
 export PATH="$rust_bin:$PATH"
 cd "$source_dir"
-case "$tool" in
-  aube)
-    : > "$out/empty-primer.rkyv.zst"
-    AUBE_PRIMER_PATH="$out/empty-primer.rkyv.zst" "$cargo_bin" build --release --locked --target "$target" -p aube --bin aube
-    ;;
-  biome)
-    "$cargo_bin" build --release --locked --target "$target" -p biome_cli --bin biome
-    ;;
-  pitchfork)
-    export PATH="$out:$PATH" AUBE_NO_UPDATE_CHECK=1
-    node_bin=$(cd "$root" && mise where node@24.21.0)/bin
-    (
-      cd ui
-      export PATH="$node_bin:$PATH"
-      aube install --frozen-lockfile
-      aube run build
-      test -f dist/index.html
-    )
-    "$cargo_bin" build --release --locked --target "$target" --bin pitchfork
-    ;;
-  *) echo "no native guest builder: $tool" >&2; exit 1 ;;
-esac
-install -m 0755 "$CARGO_TARGET_DIR/$target/release/$tool" "$out/$tool"
+config=$(jq -ce --arg tool "$tool" '.[$tool].native | select(.kind == "cargo")' "$root/web/tools.json") ||
+  { echo "no native guest builder: $tool" >&2; exit 1; }
+binary=$(jq -er .binary <<<"$config")
+package=$(jq -r '.package // empty' <<<"$config")
+[[ $binary =~ ^[a-zA-Z0-9_-]+$ && $package =~ ^[a-zA-Z0-9_-]*$ ]] ||
+  { echo 'invalid Cargo build configuration' >&2; exit 1; }
+if [[ $(jq -r '.primer // false' <<<"$config") == true ]]; then
+  : > "$out/empty-primer.rkyv.zst"
+  export AUBE_PRIMER_PATH="$out/empty-primer.rkyv.zst"
+fi
+if [[ $(jq -r '.ui // false' <<<"$config") == true ]]; then
+  export PATH="$out:$PATH" AUBE_NO_UPDATE_CHECK=1
+  node_bin=$(cd "$root" && mise where node@24.21.0)/bin
+  (
+    cd ui
+    export PATH="$node_bin:$PATH"
+    aube install --frozen-lockfile
+    aube run build
+    test -f dist/index.html
+  )
+fi
+args=(build --release --locked --target "$target" --bin "$binary")
+if [[ -n $package ]]; then args+=(-p "$package"); fi
+"$cargo_bin" "${args[@]}"
+install -m 0755 "$CARGO_TARGET_DIR/$target/release/$binary" "$out/$tool"

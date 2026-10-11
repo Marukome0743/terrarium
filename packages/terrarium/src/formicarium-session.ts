@@ -21,16 +21,14 @@ export interface SelectedGuest {
 }
 export interface GuestRequest {
   base: string;
-  tool: 'aube' | 'pitchfork' | 'biome';
+  tool: string;
   ref: string;
   fixture?: string;
 }
 export type GuestResolver = (request: GuestRequest) => Promise<SelectedGuest>;
 
-export function usesFormicarium(
-  tool: string,
-): tool is 'aube' | 'pitchfork' | 'biome' {
-  return tool === 'aube' || tool === 'pitchfork' || tool === 'biome';
+export function usesFormicarium(tool: string): boolean {
+  return /^[a-z][a-z0-9-]*$/.test(tool);
 }
 
 /** Legacy catalogues omit guest; declared guest formats must be recognized. */

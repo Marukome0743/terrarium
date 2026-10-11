@@ -33,8 +33,8 @@
 
 <!-- Project-specific specialisation. -->
 
-- 公開は GitHub Pages（公開元は GitHub Actions、`actions/deploy-pages`）。サイトは `web/`、`packages/terrarium` から作るバンドル `web/terrarium.mjs`、fixture、ビルドで構成する。ビルドは成果物であり `main` にはコミットせず、`builds` ブランチに置く。
-- `.github/workflows/pages.yml` が、手動実行で任意の ref（ブランチ、タグ、コミット、`pr-<n>`）をビルドし、毎日 `web/tools.json` の各ツールの `default`（aube は `main`、pitchfork は `v2.29.0`）をビルドする。ビルドを追加するたびに `builds` ブランチを 1 コミットに書き換える。
+- 公開は GitHub Pages（公開元は GitHub Actions、`actions/deploy-pages`）。サイトは `web/`、`packages/terrarium` のバンドル、fixture、formicarium guest で構成する。ビルドは同一実行の Actions artifact として渡し、`main` や旧 `builds` ブランチへ追加しない。
+- Pages は登録ツールの最新安定版を毎回解決し、公式 static musl バイナリを検証して取得するか、未変更ソースをビルドする。手動 ref と `web/tool-refs.json` はブランチ・タグ・コミット・PR、および fork の `owner/repo` に共通対応し、最新版の default を変更せず選択肢を追加する。Node と Chromium・Firefox・WebKit の検証成功後にデプロイする。
 - COOP/COEP ヘッダーは `web/coi-serviceworker.js` が付与する。ヘッダーを設定できないホストでも動くことが前提。
 - 詳細: `aidlc/spaces/default/knowledge/aidlc-shared/build-and-deploy.md`
 
@@ -46,11 +46,9 @@
 
 <!-- Technology choices locked for this project. -->
 
-- 対象 CLI はソースから `wasm32-unknown-emscripten` 向けにコンパイルする（WASI ではなく Emscripten を選んだ理由は `knowledge/aidlc-shared/portability.md`）。
-- ランタイムは Emscripten 自身の JavaScript ランタイム。不足分は `runtime/`（`syscalls.c`、`libterrarium.js`）で補う。
-- スレッドは Emscripten pthreads（nightly Rust、`-Zbuild-std`、`+atomics`、`-sPROXY_TO_PTHREAD`）。
-- 依存クレートへの変更は `patches/` のパッチとして持ち、`scripts/vendor-patched.sh` で適用する。対象ツール自身への変更が必要なときは、上流に入れるのではなく `patches/tools/<tool>-<version>.patch` として terrarium 側で持ち、`mise-tasks/build/<tool>.sh` が適用する。
-- ブラウザ端末は xterm.js。端末要素と Session は `packages/terrarium`（TypeScript、npm パッケージ `@aletheia-works/terrarium`）にあり、Node.js 実行（`runtime/run-node.mjs`）とブラウザは同じ Session を共有する。
+- CLI guest は static x86-64 musl ELF。ブラウザ内実行は固定入力で検証した formicarium RC のランタイムを使う。
+- ソースビルドは登録情報の Cargo package/binary に従う共通 `mise-tasks/build/native.sh`。旧 Emscripten、nightly build-std、vendoring/tool パッチは使わない。別ビルド方式や非対応 syscall を必要とする新ツールには追加の builder/実行互換性の検証が必要。
+- ブラウザ端末は xterm.js。端末要素とセッションは `packages/terrarium`（TypeScript、npm パッケージ `@aletheia-works/terrarium`）。公開済み `Session` API の互換性は維持する。
 
 ## Decided
 
@@ -65,7 +63,7 @@
 - DECIDED: 提供方法は複数用意する（リンク、カスタム要素 `<terrarium-terminal>`、iframe）。実装は要素 1 つにまとめ、ページと iframe はその上に作る。iframe の入口は残す (user decision, 2026-10-04)
 - DECIDED: 1 コマンド 1 プロセス、1 セッション 1 ディスク。各コマンドは新しいインスタンスで起動し、ディスクから初期化して終了時に書き戻す (design discussion, 2026-10-02)
 - DECIDED: 当面の非ゴールはネットワークアクセス、Node.js の実行（ライフサイクルスクリプト含む） (design discussion, 2026-10-02)
-- DECIDED: 2 つ目のツールとして pitchfork を入れる。対象はスーパーバイザーを要しないコマンド（`--version`、`daemons add`、`status`、`settings`、`config` など）で、デーモンの起動・監視は対象外。pitchfork 自身への変更は terrarium 側のパッチで持つ (user decision, 2026-10-04)
+- DECIDED: 2 つ目のツールとして pitchfork を入れる。対象はスーパーバイザーを要しないコマンド（`--version`、`daemons add`、`status`、`settings`、`config` など）で、デーモンの起動・監視は対象外。旧方式では pitchfork 自身への変更を terrarium 側のパッチで保持したが、現在は未変更ソースと fork ref の登録へ移行 (user decisions, 2026-10-04 / 2026-10-11)
 - 未決事項は `knowledge/aidlc-shared/design.md` の Open questions を参照。議論ではなく計測で決める。
 
 ## Scope Overrides

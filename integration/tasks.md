@@ -6,13 +6,8 @@ an extra declaration in `mise.toml`.
 
 | Task | Purpose |
 | ---- | ------- |
-| `build:resolve <tool> <ref>` | Resolve a branch, release, commit or PR to a source identity |
-| `build:aube <source> <output>` | Build the legacy Emscripten aube guest |
-| `build:pitchfork <source> <output>` | Build the legacy Emscripten pitchfork guest |
 | `build:native <tool> <source> <output>` | Build a native guest for formicarium |
-| `build:load` | Load the published builds branch |
-| `web:stage [tool ref output]` | Stage guest files and build metadata |
-| `site:build [output] [mode]` | Assemble the site; defaults to `.site` and formicarium |
+| `site:build [output]` | Assemble the site; defaults to `.site` and formicarium |
 | `terrarium:prepare [input options]` | Verify fixed inputs and fetch the pinned npm RC |
 | `ci:terrarium` | Install, type-check, unit-test and build the package |
 | `ci:e2e` | Resolve latest stable guests and test the terminal in three browsers |
@@ -31,20 +26,22 @@ the frozen dependency installation.
 PR CI uses the same latest guest pipeline. Its `E2E (chromium)`,
 `E2E (firefox)` and `E2E (webkit)` checks cover latest versions, terminal controls,
 persistence and iframe/origin contracts. The former Emscripten E2E workflow and
-old aube `v2.6.1` download are no longer part of routine acceptance. Legacy build
-entrypoints remain available for explicit manual builds.
+old aube `v2.6.1` download and manual Emscripten builds have been removed.
+Pages manual source refs use the same native builder and acceptance pipeline.
+See [registered source refs](latest-tool-builds.md#registered-source-refs-and-vivarium-comparison)
+for branch, commit, PR and fork registration.
 
 Simple commands and task dependencies remain in `mise.toml`. Shared, tested
-JavaScript logic stays in `scripts/`, as do shared shell build helpers such as
-`emscripten-env.sh`, `patch-rust-src.sh` and `vendor-patched.sh`. These are
-implementation details rather than additional task entrypoints.
+JavaScript logic stays in `scripts/`; source ref resolution, native acquisition
+and candidate assembly are used by both local commands and GitHub Actions.
 
 GitHub Actions owns matrices, artifact transfer, permissions and deployment.
 It can invoke these same task files directly after setting up its tools. This
 keeps local operations reproducible without adding wrapper scripts for CI.
-The retired legacy browser harness, its host pages and its fetch/preparation
-tasks have been removed. Manual Emscripten build and publication entrypoints
-remain in use by Pages and are retained.
+The legacy browser harness, manual build/staging tasks, vendoring helpers,
+Emscripten runtime additions and patches have been retired. The published
+`Session` API remains available for existing package consumers; Pages uses
+formicarium exclusively.
 
 The unused `check-pitchfork-runtime.mjs` checker, tied to `v2.29.0`, has been
 removed. The maintained Playwright suites cover CLI commands, disk persistence,

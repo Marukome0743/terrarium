@@ -61,7 +61,6 @@
   "keywords": [
     "terminal",
     "webassembly",
-    "emscripten",
     "web-component",
     "cli",
     "xterm"

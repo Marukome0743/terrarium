@@ -72,10 +72,11 @@ if (resolutions.tools.biome) {
   });
 }
 
-const biomeRefs = JSON.parse(
-  readFileSync(path.join(site, 'web/biome-ref-resolutions.json'), 'utf8'),
+const toolRefs = JSON.parse(
+  readFileSync(path.join(site, 'web/tool-ref-resolutions.json'), 'utf8'),
 ) as {
   refs: Array<{
+    tool: string;
     name: string;
     commit: string;
     ref: string;
@@ -84,12 +85,12 @@ const biomeRefs = JSON.parse(
     expected?: { semicolons: string; quoteStyle: string };
   }>;
 };
-for (const resolved of biomeRefs.refs) {
-  test(`Biome source ref ${resolved.name} executes with its exact identity and migration behavior`, async ({
+for (const resolved of toolRefs.refs) {
+  test(`source ref ${resolved.tool}/${resolved.name} executes with its exact identity and fixture behavior`, async ({
     page,
   }) => {
     await page.goto(
-      `${SITE}/element.html?tool=biome&ref=${encodeURIComponent(resolved.name)}`,
+      `${SITE}/element.html?tool=${encodeURIComponent(resolved.tool)}&ref=${encodeURIComponent(resolved.name)}`,
     );
     await page.locator('terrarium-terminal').waitFor();
     const ready = await page.evaluate(
@@ -98,19 +99,22 @@ for (const resolved of biomeRefs.refs) {
           .ready,
     );
     expect(ready).toMatchObject({
-      tool: 'biome',
+      tool: resolved.tool,
       ref: resolved.name,
       commit: resolved.commit,
     });
     // Selecting a source build without a fixture keeps the normal tool usable.
-    const normal = await page.evaluate(() =>
-      (document.querySelector('terrarium-terminal') as TerrariumTerminal).run(
-        'biome --version',
-      ),
+    const normal = await page.evaluate(
+      (tool) =>
+        (document.querySelector('terrarium-terminal') as TerrariumTerminal).run(
+          `${tool} --version`,
+        ),
+      resolved.tool,
     );
     expect(normal.code).toBe(0);
+    expect(normal.output.trim()).not.toBe('');
     await page.goto(
-      `${SITE}/element.html?tool=biome&ref=${encodeURIComponent(resolved.name)}&fixture=${resolved.fixture}`,
+      `${SITE}/element.html?tool=${encodeURIComponent(resolved.tool)}&ref=${encodeURIComponent(resolved.name)}&fixture=${resolved.fixture}`,
     );
     await page.evaluate(async () => {
       await customElements.whenDefined('terrarium-terminal');
@@ -122,10 +126,12 @@ for (const resolved of biomeRefs.refs) {
         (document.querySelector('terrarium-terminal') as TerrariumTerminal).run(
           command,
         ),
-      resolved.expected ? 'biome migrate prettier --write' : 'biome --version',
+      resolved.tool === 'biome' && resolved.expected
+        ? 'biome migrate prettier --write'
+        : `${resolved.tool} --version`,
     );
     expect(result.code).toBe(0);
-    if (resolved.expected) {
+    if (resolved.tool === 'biome' && resolved.expected) {
       const config = await page.evaluate(() =>
         (document.querySelector('terrarium-terminal') as TerrariumTerminal).run(
           'cat biome.json',

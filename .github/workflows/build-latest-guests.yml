@@ -2,10 +2,13 @@ name: Build and verify latest guests
 on:
   workflow_call:
     inputs:
-      biome_repository:
+      ref_repository:
         type: string
-        default: biomejs/biome
-      biome_ref:
+        default: ""
+      ref_tool:
+        type: string
+        default: ""
+      tool_ref:
         type: string
         default: ""
   pull_request:
@@ -20,7 +23,8 @@ jobs:
   resolve:
     runs-on: ubuntu-latest
     outputs:
-      biome_matrix: ${{ steps.refs.outputs.matrix }}
+      ref_matrix: ${{ steps.refs.outputs.matrix }}
+      ref_count: ${{ steps.refs.outputs.count }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -32,12 +36,15 @@ jobs:
         id: refs
         env:
           GH_TOKEN: ${{ github.token }}
-          BIOME_REPOSITORY: ${{ inputs.biome_repository }}
-          BIOME_REF: ${{ inputs.biome_ref }}
+          REF_REPOSITORY: ${{ inputs.ref_repository }}
+          TOOL_REF: ${{ inputs.tool_ref }}
+          REF_TOOL: ${{ inputs.ref_tool }}
         run: |
           node scripts/latest-guests.mjs resolve .vendor/native/resolutions.json
-          matrix=$(node scripts/biome-refs.mjs resolve web/biome-refs.json .vendor/native/biome-ref-resolutions.json)
+          matrix=$(node scripts/tool-refs.mjs resolve web/tool-refs.json .vendor/native/tool-ref-resolutions.json)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          count=$(jq -er '.include | length' <<<"$matrix")
+          echo "count=$count" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: native-resolutions
@@ -84,11 +91,12 @@ jobs:
           name: latest-base
           path: .vendor/latest-guests
           retention-days: 7
-  biome:
+  refs:
     needs: resolve
+    if: needs.resolve.outputs.ref_count != '0'
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.resolve.outputs.biome_matrix) }}
+      matrix: ${{ fromJSON(needs.resolve.outputs.ref_matrix) }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -110,9 +118,9 @@ jobs:
           path: |
             ~/.cargo/registry
             .vendor/native/cargo
-          key: biome-musl-${{ runner.os }}-${{ matrix.name }}-${{ hashFiles('mise.toml', 'mise-tasks/build/native.sh') }}-${{ matrix.commit }}
+          key: ${{ matrix.tool }}-musl-${{ runner.os }}-${{ matrix.name }}-${{ hashFiles('mise.toml', 'mise-tasks/build/native.sh') }}-${{ matrix.commit }}
           restore-keys: |
-            biome-musl-${{ runner.os }}-${{ matrix.name }}-
+            ${{ matrix.tool }}-musl-${{ runner.os }}-${{ matrix.name }}-
             native-musl-${{ runner.os }}-
       - name: Prepare the pinned runtime and resolver
         env:
@@ -121,24 +129,26 @@ jobs:
           bash mise-tasks/terrarium/prepare.sh --url "$FORMICARIUM_INPUTS_URL"
           cd packages/terrarium
           bun install --frozen-lockfile
-      - name: Build one resolved Biome source
+      - name: Build one resolved source ref
         env:
+          BUILD_TOOL: ${{ matrix.tool }}
           BUILD_NAME: ${{ matrix.name }}
           CARGO_TARGET_DIR: ${{ github.workspace }}/.vendor/native/cargo
         run: |
           started=$(date +%s)
-          node scripts/biome-refs.mjs build .vendor/native/biome-ref-resolutions.json "$BUILD_NAME" .vendor/biome-output .vendor/formicarium-inputs/resolver
+          node scripts/tool-refs.mjs build .vendor/native/tool-ref-resolutions.json "$BUILD_TOOL" "$BUILD_NAME" .vendor/ref-output .vendor/formicarium-inputs/resolver .vendor/native/resolutions.json
           elapsed=$(( $(date +%s) - started ))
-          echo "Biome $BUILD_NAME: ${elapsed}s (resolved commit ${{ matrix.commit }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "$BUILD_TOOL $BUILD_NAME: ${elapsed}s (resolved commit ${{ matrix.commit }})" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: biome-ref-${{ matrix.name }}
+          name: tool-ref-${{ matrix.tool }}-${{ matrix.name }}
           path: |
-            .vendor/biome-output/biome
-            .vendor/biome-output/biome.json
+            .vendor/ref-output/${{ matrix.tool }}
+            .vendor/ref-output/${{ matrix.tool }}.json
           retention-days: 7
   candidate:
-    needs: [resolve, latest, biome]
+    needs: [resolve, latest, refs]
+    if: always() && needs.resolve.result == 'success' && needs.latest.result == 'success' && (needs.refs.result == 'success' || (needs.resolve.outputs.ref_count == '0' && needs.refs.result == 'skipped'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -156,9 +166,10 @@ jobs:
           name: latest-base
           path: .vendor/latest-guests
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: needs.resolve.outputs.ref_count != '0'
         with:
-          pattern: biome-ref-*
-          path: .vendor/biome-refs
+          pattern: tool-ref-*
+          path: .vendor/tool-refs
       - name: Prepare the pinned runtime and resolver
         env:
           FORMICARIUM_INPUTS_URL: ${{ vars.FORMICARIUM_INPUTS_URL || 'https://raw.githubusercontent.com/Marukome0743/terrarium/74baa1101ebf6d8fc310ea70de3ddc071a87c01f/inputs.tar.gz' }}
@@ -170,10 +181,10 @@ jobs:
         env:
           TERRARIUM_GUEST_SITE: .vendor/latest-guests
         run: |
-          node scripts/biome-refs.mjs stage .vendor/native/biome-ref-resolutions.json .vendor/biome-refs .vendor/latest-guests .vendor/formicarium-inputs/resolver
+          node scripts/tool-refs.mjs stage .vendor/native/tool-ref-resolutions.json .vendor/tool-refs .vendor/latest-guests .vendor/formicarium-inputs/resolver
           bash mise-tasks/site/build.sh .vendor/site-latest
-      - name: Verify Biome migration in Node
-        run: node scripts/check-biome-refs.mjs .vendor/site-latest
+      - name: Verify source refs and configured reproductions in Node
+        run: node scripts/check-tool-refs.mjs .vendor/site-latest
       - name: Verify latest stable versions in Node
         run: node scripts/check-latest-guests.mjs .vendor/site-latest
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -188,7 +199,7 @@ jobs:
           name: latest-guest-evidence
           path: |
             .vendor/native/*.json
-            .vendor/biome-refs/*/biome.json
+            .vendor/tool-refs/*/*.json
           retention-days: 7
   E2E:
     needs: candidate
@@ -240,10 +251,15 @@ jobs:
   guests:
     # Preserve the required check and make skipped/failed dependencies fail closed.
     if: always()
-    needs: [resolve, latest, biome, candidate, E2E]
+    needs: [resolve, latest, refs, candidate, E2E]
     runs-on: ubuntu-latest
     steps:
       - name: Require all build and acceptance jobs
         env:
           RESULTS: ${{ toJSON(needs) }}
-        run: echo "$RESULTS" | jq -e 'all(.[]; .result == "success")'
+          REF_COUNT: ${{ needs.resolve.outputs.ref_count }}
+        run: >-
+          echo "$RESULTS" | jq -e --arg count "$REF_COUNT"
+          '([.resolve, .latest, .candidate, .E2E] | all(.[]; .result == "success")) and
+          (.refs.result == "success" or ($count == "0" and .refs.result == "skipped"))'
+

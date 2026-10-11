@@ -1,6 +1,25 @@
 # terrarium — build and deployment
 
-## Build environment (Windows)
+## Current native builds and deployment
+
+Pages uses the formicarium pipeline for latest stable releases and all manual
+source refs. Verified official static-musl binaries are preferred for releases;
+selected source commits are built with the registry-driven Cargo builder.
+`web/tool-refs.json` adds persistent named selections for any registered tool,
+including fork branches, commits and PR heads. Outputs are Actions artifacts;
+Pages no longer loads or rewrites the legacy `builds` branch.
+
+Node, Chromium, Firefox and WebKit must accept the candidate before deployment.
+The candidate transaction preserves the previous site on preparation, staging,
+bundling or acceptance failure. URL stamps prevent stale page/module pairings.
+See [current operations](../../../../../integration/latest-tool-builds.md) and
+[task entrypoints](../../../../../integration/tasks.md) for commands and source
+registration. The following notes preserve the retired Emscripten implementation
+and its measurements; their commands and files are no longer active.
+
+## Historical Emscripten builds (retired)
+
+### Build environment (Windows)
 
 One-time setup, not per tool: emsdk (installed from its own repository —
 the mise `emsdk` plugin fails on Windows), CMake and Ninja for
@@ -10,7 +29,7 @@ ships), `CMAKE_TOOLCHAIN_FILE_wasm32_unknown_emscripten` and
 `CMAKE_GENERATOR=Ninja`, and a short `--target-dir`: CMake's
 `try_compile` fails under Windows' path-length limit otherwise.
 
-## Building any aube commit
+### Building any aube commit
 
 `mise-tasks/build/aube.sh <aube source> <out>` builds one aube source tree:
 it appends `scripts/vendor-patched.sh`'s `[patch]` block to its
@@ -33,7 +52,7 @@ runs the same scripts. Two things bit on the first try:
   with `0xC0000142` and the build is lost. On this machine a release
   build of aube takes 26–41 minutes; run it where nothing will kill it.
 
-## Building pitchfork
+### Building pitchfork
 
 `mise-tasks/build/pitchfork.sh <pitchfork source> <out>` does the same for
 pitchfork, after applying the newest `patches/tools/pitchfork-*.patch` to
@@ -49,7 +68,7 @@ native backend, as its 0.13.5 does for every non-browser wasm32 target).
 `vendor-patched.sh` patches two locked versions of one crate (`dirs` 6
 and 7) under a second key with `package`.
 
-## Deployment
+### Historical deployment
 
 `.github/workflows/pages.yml` deploys the site with `actions/deploy-pages`
 (the Pages source is "GitHub Actions", set in `infra/github/main.tf`). The

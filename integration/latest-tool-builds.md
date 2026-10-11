@@ -44,8 +44,8 @@ variable, fixed RC acceptance retains its recorded versions.
 New tools use the same release policy and must have a compatible official asset or native builder, plus runtime
 support before registration. Missing builders or unsupported guests stop the
 run. A tool without stable GitHub releases requires an agreed alternative policy.
-Manual ref builds still produce legacy Emscripten assets; they do not replace the
-public native catalogue.
+Manual ref builds use the same formicarium pipeline and add source selections
+without replacing the latest stable defaults.
 
 ## Local reproduction
 
@@ -83,17 +83,6 @@ Commands: `node scripts/check-latest-guests.mjs .vendor/site-latest` and
 and bun paths explicitly set. The PR's latest-guests workflow additionally
 checks the fresh Linux source build before accepting its catalogue.
 
-## Emscripten E2E inputs
-
-Emscripten E2E resolves the latest stable aube and pitchfork tags and commits once
-per run, builds those source commits with the PR's runtime/patches/toolchain,
-and shares same-run artifacts across all three browsers. Cache keys include
-source commits and build inputs; cache misses rebuild rather than fetching the
-production Pages catalogue. Tests retain page/element/iframe, fixture, event
-and tool-switch behavior assertions, while version/source expectations come
-from the resolved identities. New releases need no hardcoded test version edits.
-Native latest-guests acceptance remains independent and covers production guests.
-
 ## Biome latest
 
 Biome uses the official `biome-linux-x64-musl` standalone executable, verified
@@ -105,20 +94,38 @@ for every registered tool, including Biome, on each acceptance and deployment.
 The `biome-basic` fixture includes a formatting example and an intentional
 `debugger` lint violation. Node and Chromium/Firefox/WebKit verify formatting,
 file persistence, and lint diagnostics in addition to version/source identity.
-Latest catalogues use a terrarium-owned manifest validator extending the pinned
-validator's tool allowlist with Biome. Fixed RC catalogues and validators stay
-unchanged. Biome is a native guest; the legacy Emscripten workflow continues
-to build aube and pitchfork.
+Latest catalogues use terrarium's manifest validator for declared tools and
+verified static-musl guests. Fixed RC catalogues and validators stay unchanged.
 
-## Biome source refs and Vivarium comparison
+## Registered source refs and Vivarium comparison
 
-`web/biome-refs.json` registers additional source builds without changing the
-latest stable default. Each entry specifies `repository` (`owner/biome`, including
-forks), `ref` (branch, full commit, or `pr-<number>`), a unique selection `name`,
-and a fixture. Resolution captures the full commit once; the build downloads
-that commit and compiles `biome_cli` to static x86-64 musl without patches.
-Provenance retains the source repository/ref/commit and any PR URL. Catalogue
-assets are content-addressed and checked by the existing resolver.
+`web/tool-refs.json` registers additional source builds without changing the
+latest stable defaults. Each entry specifies a registered `tool`, optional
+`repository` (`owner/repo`, including forks), `ref` (branch, tag, full commit, or
+`pr-<number>`), a selection `name` unique within that tool, and optional `fixture`.
+Repository and fixture default to the tool's entries in `web/tools.json`.
+Resolution captures the full commit once. PR refs use the requested repository's
+PR head commit. Provenance retains the requested repository/ref/commit and PR URL;
+catalogue assets are content-addressed and validated before use.
+
+```json
+{
+  "refs": [
+    {"tool": "aube", "repository": "owner/aube-fork", "ref": "fix/example", "name": "aube-fix"},
+    {"tool": "pitchfork", "ref": "pr-123", "name": "pitchfork-pr-123"}
+  ]
+}
+```
+
+All registered tools use the same resolver, source-build matrix and registration
+path. `native` in `web/tools.json` describes the Cargo package/binary, whether
+an empty aube primer is needed, and whether UI assets need building with aube.
+New compatible Rust CLIs can use `native.kind: "cargo"` and their own repository,
+fixture and binary name without adding a repository-specific branch to the
+resolver. Other build systems need a builder adapter; the executable must still
+be static x86-64 musl and compatible with formicarium's supported system calls.
+Both existing tools and new tools require execution acceptance before use.
+Sources are compiled without local Emscripten or tool patches.
 
 The registered comparison uses JamBalaya56562's fix branch and its parent:
 
@@ -142,25 +149,30 @@ iframe. Add `run=biome%20migrate%20prettier%20--write&run=cat%20biome.json` for
 an automatic recorded run. The displayed source identity distinguishes the
 original requested ref from its exact compiled commit.
 
-Pages manual dispatch accepts tool `biome`, repository `owner/biome`, and a
-branch, commit or `pr-<number>` in `ref`. It adds that source build to the
-same validated candidate. Its generated selection name is
-`<owner>-biome-<commit-first-12>`; that commit and name are recorded in the
-`biome-ref-resolutions.json` artifact. Configured comparisons are rebuilt on
-subsequent deployments; one-off manual refs last until the next catalogue
-replacement. Add a ref to `web/biome-refs.json` to retain it across deployments.
-The legacy aube/pitchfork manual Emscripten build path is unchanged.
+Pages manual dispatch accepts any registered `tool`, optional `repository`
+(`owner/repo`), and a branch, tag, commit or `pr-<number>` in `ref`. It adds the
+source build to the same validated candidate. Its generated selection name is
+`<owner>-<repo>-<commit-first-12>`; the tool, commit and name are recorded in
+`tool-ref-resolutions.json` inside the `latest-guests` artifact. Open
+`?tool=<tool>&ref=<selection-name>` after successful deployment.
+
+Configured comparisons are rebuilt on subsequent deployments; one-off manual
+refs last until the next catalogue replacement. Add a ref to `web/tool-refs.json`
+to retain it across deployments. Build outputs travel through GitHub Actions
+artifacts and are not stored on the legacy `builds` branch. The old `force`
+input is unnecessary: each run resolves exact source identities and compiles
+selected sources, reusing compilation caches without skipping acceptance.
 
 ### Parallel source acceptance
 
 Source identities are resolved once before dispatch. The latest stable acquisition
-and each registered Biome source build run as independent jobs; Biome jobs have
+and each registered source build run as independent jobs; Source jobs have
 separate compilation caches. The candidate job gathers their artifacts, validates
 provenance and runs Node acceptance. Chromium, Firefox and WebKit then run in
 parallel. The required `guests` check succeeds only when all these jobs succeed,
 including on reusable Pages calls.
 
-GitHub Actions shows build and acceptance durations per job. Each successful Biome
+GitHub Actions shows build and acceptance durations per job. Each successful source
 build also records its selection, resolved commit and build time in the job summary.
 Parallelism reduces sequential waiting; it does not reduce the compilation work for
 a cold source build.

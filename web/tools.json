@@ -4,20 +4,36 @@
     "repository": "https://github.com/aubepkg/aube",
     "default": "latest",
     "fixture": "aube-local-deps",
-    "cwd": "/work/app"
+    "cwd": "/work/app",
+    "native": {
+      "kind": "cargo",
+      "package": "aube",
+      "binary": "aube",
+      "primer": true
+    }
   },
   "pitchfork": {
     "label": "pitchfork",
     "repository": "https://github.com/jdx/pitchfork",
     "default": "latest",
     "fixture": "pitchfork-basic",
-    "cwd": "/work/app"
+    "cwd": "/work/app",
+    "native": {
+      "kind": "cargo",
+      "binary": "pitchfork",
+      "ui": true
+    }
   },
   "biome": {
     "label": "Biome",
     "repository": "https://github.com/biomejs/biome",
     "default": "latest",
     "fixture": "biome-basic",
-    "cwd": "/work/app"
+    "cwd": "/work/app",
+    "native": {
+      "kind": "cargo",
+      "package": "biome_cli",
+      "binary": "biome"
+    }
   }
 }

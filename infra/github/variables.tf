@@ -31,7 +31,6 @@ variable "repository_topics" {
   type        = list(string)
   default = [
     "webassembly",
-    "emscripten",
     "terminal",
     "browser",
     "cli",

@@ -43,7 +43,7 @@ async function setup(old = true) {
     destination,
     sourceRoot,
     before,
-    mode: 'legacy',
+    mode: 'formicarium',
     version: 'test-version',
     bundle: async (work: string) => {
       await writeFile(path.join(work, 'web/terrarium.mjs'), 'export {};');
@@ -129,75 +129,27 @@ test('formicarium whole-site assembly includes verified receipt and rejects part
   ).rejects.toThrow('stage boundary failed');
   expect(await candidateInventory(input.destination)).toEqual(before);
 });
-test('legacy explicit ref updates a normal tools file inside the candidate', async () => {
-  const input = await setup();
-  const original = process.env.TERRARIUM_PITCHFORK_REF;
-  try {
-    process.env.TERRARIUM_PITCHFORK_REF = 'chosen';
-    await writeFile(
-      path.join(input.sourceRoot, 'web/dist/builds.json'),
-      JSON.stringify({ builds: { pitchfork: { chosen: {} } } }),
-    );
-    await writeFile(
-      path.join(input.sourceRoot, 'web/tools.json'),
-      JSON.stringify({ pitchfork: { default: 'old' } }),
-    );
-    await assembleCandidate(input);
-    expect(
-      JSON.parse(
-        await readFile(path.join(input.destination, 'web/tools.json'), 'utf8'),
-      ).pitchfork.default,
-    ).toBe('chosen');
-  } finally {
-    if (original === undefined) delete process.env.TERRARIUM_PITCHFORK_REF;
-    else process.env.TERRARIUM_PITCHFORK_REF = original;
-  }
-});
 for (const boundary of ['file', 'parent']) {
-  test(`legacy explicit ref rejects ${boundary} symlink without external or previous-candidate writes`, async () => {
+  test(`assembly rejects ${boundary} symlink without external or previous-candidate writes`, async () => {
     const input = await setup();
-    const original = process.env.TERRARIUM_PITCHFORK_REF;
     const { rename, symlink } = await import('node:fs/promises');
     const outside = path.join(path.dirname(input.sourceRoot), 'outside');
     await mkdir(outside);
-    const outsideFile = path.join(outside, 'tools.json');
-    try {
-      process.env.TERRARIUM_PITCHFORK_REF = 'chosen';
-      await writeFile(
-        path.join(input.sourceRoot, 'web/dist/builds.json'),
-        JSON.stringify({ builds: { pitchfork: { chosen: {} } } }),
-      );
-      await writeFile(
-        path.join(input.sourceRoot, 'web/tools.json'),
-        JSON.stringify({ pitchfork: { default: 'old' } }),
-      );
-      if (boundary === 'file') {
-        await writeFile(
-          outsideFile,
-          JSON.stringify({ pitchfork: { default: 'old' } }),
-        );
-        await rm(path.join(input.sourceRoot, 'web/tools.json'));
-        await symlink(
-          outsideFile,
-          path.join(input.sourceRoot, 'web/tools.json'),
-        );
-      } else {
-        await rm(outside, { recursive: true });
-        await rename(path.join(input.sourceRoot, 'web'), outside);
-        await symlink(outside, path.join(input.sourceRoot, 'web'));
-      }
-      const externalBefore = await candidateInventory(outside);
-      await expect(assembleCandidate(input)).rejects.toThrow(
-        'unsafe candidate output',
-      );
-      expect(await candidateInventory(outside)).toEqual(externalBefore);
-      expect(
-        JSON.parse(await readFile(outsideFile, 'utf8')).pitchfork.default,
-      ).toBe('old');
-      expect(await candidateInventory(input.destination)).toEqual(input.before);
-    } finally {
-      if (original === undefined) delete process.env.TERRARIUM_PITCHFORK_REF;
-      else process.env.TERRARIUM_PITCHFORK_REF = original;
+    if (boundary === 'file') {
+      const outsideFile = path.join(outside, 'tools.json');
+      await writeFile(outsideFile, '{}');
+      await rm(path.join(input.sourceRoot, 'web/tools.json'));
+      await symlink(outsideFile, path.join(input.sourceRoot, 'web/tools.json'));
+    } else {
+      await rm(outside, { recursive: true });
+      await rename(path.join(input.sourceRoot, 'web'), outside);
+      await symlink(outside, path.join(input.sourceRoot, 'web'));
     }
+    const externalBefore = await candidateInventory(outside);
+    await expect(assembleCandidate(input)).rejects.toThrow(
+      'unsafe candidate output',
+    );
+    expect(await candidateInventory(outside)).toEqual(externalBefore);
+    expect(await candidateInventory(input.destination)).toEqual(input.before);
   });
 }

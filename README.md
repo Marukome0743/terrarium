@@ -117,10 +117,12 @@ In a cross-origin isolated page an iframe from another origin needs
 it) or be a `credentialless` iframe, which only Chromium supports so
 far. The element has neither limit.
 
-To build another ref, run the **Pages** workflow with `tool` and `ref`
-(a branch, a tag, a commit, or `pr-<number>`). The build appears as
-`?tool=<tool>&ref=<name>` when the workflow finishes. A pitchfork ref
-must remain compatible with its versioned Emscripten patch.
+To build another ref, run the **Pages** workflow with a registered `tool`,
+`ref` (a branch, a tag, a commit, or `pr-<number>`) and optional fork
+`repository` (`owner/repo`). It compiles unmodified source to static musl for
+formicarium. The build appears as `?tool=<tool>&ref=<name>` after acceptance
+and deployment. See [source registration](integration/latest-tool-builds.md#registered-source-refs-and-vivarium-comparison)
+for selection names and persistent comparisons.
 
 See [the design notes](aidlc/spaces/default/knowledge/aidlc-shared/design.md) for the plan and the open
 questions.

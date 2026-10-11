@@ -32,7 +32,6 @@
           - "**/Cargo.toml"
           - "**/Cargo.lock"
           - "**/rust-toolchain*"
-          - "patches/**"
 
 "scope: js":
   - changed-files:
@@ -49,8 +48,6 @@
       - any-glob-to-any-file:
           - "**/*.wasm"
           - "**/*.wat"
-          - "runtime/**"
-          - "scripts/emscripten-env.sh"
           - "mise-tasks/build/*.sh"
 
 "type: docs":

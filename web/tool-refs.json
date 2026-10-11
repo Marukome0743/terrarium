@@ -8,7 +8,8 @@
       "expected": {
         "semicolons": "asNeeded",
         "quoteStyle": "single"
-      }
+      },
+      "tool": "biome"
     },
     {
       "repository": "JamBalaya56562/biome",
@@ -18,7 +19,8 @@
       "expected": {
         "semicolons": "always",
         "quoteStyle": "double"
-      }
+      },
+      "tool": "biome"
     }
   ]
 }

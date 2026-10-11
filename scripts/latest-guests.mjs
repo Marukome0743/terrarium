@@ -214,17 +214,23 @@ export function releaseBinary(archive, tool, asset) {
 export async function buildLatest(resolutions, destination, resolverRoot) {
   // Setup installs build tools explicitly; never install unrelated project tools.
   process.env.MISE_AUTO_INSTALL = '0';
+  const registered = await load(path.join(root, 'web/tools.json'));
   for (const [tool, resolved] of Object.entries(resolutions.tools)) {
     if (
-      !resolved.releaseAsset &&
-      !['aube', 'pitchfork', 'biome'].includes(tool)
+      !registered[tool] ||
+      (!resolved.releaseAsset && registered[tool].native?.kind !== 'cargo')
     )
       throw new Error(`no native guest builder: ${tool}`);
   }
   const { validateGuestElf } = await import(
     pathToFileURL(path.join(resolverRoot, 'resolver.js')).href
   );
-  if (resolutions.tools.pitchfork && !resolutions.tools.pitchfork.releaseAsset)
+  if (
+    Object.entries(resolutions.tools).some(
+      ([tool, resolved]) =>
+        registered[tool]?.native?.ui && !resolved.releaseAsset,
+    )
+  )
     run('mise', ['install', 'node@24.21.0'], { cwd: root });
   await mkdir(destination, { recursive: true });
   const ordered = Object.keys(resolutions.tools).sort((a, b) =>

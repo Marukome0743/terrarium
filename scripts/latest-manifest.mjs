@@ -3,7 +3,7 @@
 export function isRecord(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
-const TOOLS = new Set(['aube', 'pitchfork', 'biome']);
+const TOOLS = /^[a-z][a-z0-9-]*$/;
 const SHA256 = /^[a-f0-9]{64}$/;
 const COMMIT = /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/;
 const own = (value, key) => Object.hasOwn(value, key);
@@ -109,7 +109,7 @@ export function validateBuild(build, { tool, ref, base }) {
   requireObject(build, 'build');
   if (build.schemaVersion !== 1)
     throw new Error('build: unsupported schemaVersion');
-  if (!TOOLS.has(tool) || build.tool !== tool || build.ref !== ref) {
+  if (!TOOLS.test(tool) || build.tool !== tool || build.ref !== ref) {
     throw new Error('build: tool/ref identity mismatch');
   }
   requireObject(build.source, 'build source');
@@ -143,7 +143,7 @@ export function validateBuild(build, { tool, ref, base }) {
 export function selectBuild(catalog, input) {
   requireObject(catalog, 'catalogue');
   requireObject(input, 'selection');
-  if (typeof input.tool !== 'string' || !TOOLS.has(input.tool))
+  if (typeof input.tool !== 'string' || !TOOLS.test(input.tool))
     throw new Error('selection: unknown tool');
   requireObject(catalog.tools, 'tools');
   requireObject(catalog.builds, 'builds');
