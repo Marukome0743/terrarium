@@ -121,7 +121,7 @@ locals {
     "type: chore"          = { color = "fef2c0", description = "Maintenance tasks" }
 
     "scope: ci"    = { color = "ededed", description = "CI/CD pipeline" }
-    "scope: docs"  = { color = "c2e0c6", description = "Design notes under aidlc/spaces/*/knowledge and docs/" }
+    "scope: docs"  = { color = "c2e0c6", description = "Documentation and design notes under docs/" }
     "scope: infra" = { color = "5319e7", description = "Infrastructure as Code" }
     "scope: js"    = { color = "f1e05a", description = "JavaScript/TypeScript related" }
     "scope: rust"  = { color = "dea584", description = "Rust related, including the crate patches" }

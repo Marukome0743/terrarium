@@ -58,7 +58,7 @@ accepts formicarium. Its rollback and symlink protections remain tested, includi
 rejecting a symlinked `web` parent before staging can write outside the candidate.
 
 Published `Session`/`Tool` exports remain for existing package consumers. The
-legacy shared `builds` branch and historical AI-DLC records are preserved;
+legacy shared `builds` branch is no longer consumed;
 Pages no longer reads or writes that branch.
 
 The shared resolver tests cover branches, full commits and PR heads for all three

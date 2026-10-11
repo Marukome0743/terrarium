@@ -159,7 +159,7 @@ mise exec -- node scripts/prepare-formicarium-rc-inputs.mjs --from <old-inputs> 
 mise exec -- node scripts/accept-formicarium-node.mjs --inputs <new-inputs> --output <node-report.json>
 ```
 
-2026-10-10の受入れ結果はNode 6/6、Chromium／Firefox／WebKit各15/15、skip 0です。実guestはaube v2.7.0とpitchfork v2.30.0で、version、seed/nested cwd、設定ファイル永続化、非zero exit後の回復、disposeを確認しました。browserのDOM/event/iframe/origin契約は既存45ケースで確認しました。コマンド・環境version・出力・差分は`aidlc/spaces/default/intents/261010-formicarium-rc-acceptanc/construction/code-generation/evidence/`に記録しています。これはローカル受入れで、遠隔CI・Pages・実Safariの結果は未検証です。
+2026-10-10の受入れ結果はNode 6/6、Chromium／Firefox／WebKit各15/15、skip 0です。実guestはaube v2.7.0とpitchfork v2.30.0で、version、seed/nested cwd、設定ファイル永続化、非zero exit後の回復、disposeを確認しました。browserのDOM/event/iframe/origin契約は既存45ケースで確認しました。公開RCの固定入力は[descriptor](../../integration/formicarium-inputs.json)で確認できます。現在の検証手順は[タスクの運用](../../integration/tasks.md)を参照してください。
 
 ### 最新guestのCI対象
 

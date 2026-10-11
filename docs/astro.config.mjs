@@ -21,6 +21,8 @@ export default defineConfig({
         { label: 'Source builds', link: '/guides/source-builds/' },
         { label: 'Demos', link: '/demos/' },
         { label: 'Releases', link: '/guides/releases/' },
+        { label: 'Architecture', link: '/reference/architecture/' },
+        { label: 'Maintenance', link: '/reference/maintenance/' },
       ],
     }),
   ],

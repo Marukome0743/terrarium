@@ -17,7 +17,6 @@
 "scope: docs":
   - changed-files:
       - any-glob-to-any-file:
-          - "aidlc/spaces/*/knowledge/**"
           - "docs/**"
 
 "scope: infra":

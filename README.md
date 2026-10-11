@@ -127,7 +127,7 @@ formicarium. The build appears as `?tool=<tool>&ref=<name>` after acceptance
 and deployment. See [source registration](integration/latest-tool-builds.md#registered-source-refs-and-vivarium-comparison)
 for selection names and persistent comparisons.
 
-See [the design notes](aidlc/spaces/default/knowledge/aidlc-shared/design.md) for the plan and the open
+See [the design notes](docs/src/content/docs/reference/architecture.md) for the plan and the open
 questions.
 
 ## License

@@ -93,7 +93,6 @@ export async function candidateDestination(destination, protectedPaths = []) {
     'scripts',
     'packages',
     'runtime',
-    'aidlc',
     '.git',
     '.jj',
     '.codex',

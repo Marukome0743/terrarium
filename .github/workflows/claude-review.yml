@@ -58,8 +58,8 @@ jobs:
 
             2. Contradictions with what the repository already states.
                Hold the diff against AGENTS.md, the rules and decisions
-               in aidlc/spaces/default/memory/ (project.md first), the
-               design notes in aidlc/spaces/default/knowledge/aidlc-shared/,
+               in docs/src/content/docs/reference/ (architecture.md first),
+               the operational procedures in integration/,
                and the README.md nearest the changed code. Read the
                rules; do not work from a list of the ones somebody
                remembered. Quote the sentence the change breaks. Either

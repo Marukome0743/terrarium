@@ -4,23 +4,9 @@ include = ["**/*.md"]
 exclude = [
   ".git",
   ".jj",
-  ".claude",
-  ".codex",
-  ".agents/skills",
   ".vendor",
   "node_modules",
   "dist",
-  "aidlc/spaces/*/memory/**",
-  "aidlc/spaces/*/intents/*/aidlc-state.md",
-  "aidlc/spaces/*/intents/*/audit/**",
-  # Immutable source snapshots and raw tool output retain their original bytes.
-  "aidlc/spaces/*/intents/*/**/evidence/**",
-  "aidlc/spaces/*/intents/*/**/memory.md",
-  "aidlc/spaces/*/intents/*/**/*-questions.md",
-  "aidlc/spaces/*/intents/*/verification/**",
-  # Raw Playwright diagnostics and formal tool review copies preserve original bytes.
-  "aidlc/spaces/*/intents/*/**/verification*/**/*results/**/error-context.md",
-  "aidlc/spaces/*/intents/*/**/reviews/review-*.md",
   "**/CHANGELOG.md",
   "**/node_modules/**",
 ]

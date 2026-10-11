@@ -45,5 +45,4 @@ formicarium exclusively.
 
 The unused `check-pitchfork-runtime.mjs` checker, tied to `v2.29.0`, has been
 removed. The maintained Playwright suites cover CLI commands, disk persistence,
-tool switching, custom elements and iframe integration. Historical AI-DLC
-records still describe the old acceptance run.
+tool switching, custom elements and iframe integration.

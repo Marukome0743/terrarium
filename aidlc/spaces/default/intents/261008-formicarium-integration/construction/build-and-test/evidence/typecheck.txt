@@ -1,2 +1,0 @@
-$ bun run gen && tsc -p tsconfig.json --noEmit && tsc -p tests/tsconfig.json
-$ bun scripts/gen-css.ts
